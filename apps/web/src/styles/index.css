@@ -653,3 +653,118 @@ button {
     display: none;
   }
 }
+
+/* =========================================
+   FORGEAI CHAT MESSAGES
+   ========================================= */
+
+.messages {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.message-row {
+  width: 100%;
+  display: flex;
+}
+
+.message-row-assistant {
+  justify-content: flex-start;
+}
+
+.message-row-user {
+  justify-content: flex-end;
+}
+
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: min(78%, 760px);
+}
+
+.message-wrapper-assistant {
+  align-items: flex-start;
+}
+
+.message-wrapper-user {
+  align-items: flex-end;
+}
+
+.message-role {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.65;
+  padding: 0 4px;
+}
+
+.message-role-assistant {
+  text-align: left;
+}
+
+.message-role-user {
+  text-align: right;
+}
+
+.message-bubble {
+  padding: 13px 17px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ForgeAI — LEFT */
+
+.message-bubble-assistant {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-left-radius: 6px;
+  text-align: left;
+}
+
+/* User — RIGHT */
+
+.message-bubble-user {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #4f46e5
+  );
+  border-top-right-radius: 6px;
+  text-align: left;
+}
+
+/* Streaming indicator */
+
+.thinking {
+  opacity: 0.65;
+  font-style: italic;
+}
+
+/* Mobile */
+
+@media (max-width: 720px) {
+  .messages {
+    padding: 20px 14px;
+    gap: 18px;
+  }
+
+  .message-wrapper {
+    max-width: 88%;
+  }
+
+  .message-bubble {
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+}

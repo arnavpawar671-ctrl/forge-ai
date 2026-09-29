@@ -27,12 +27,36 @@ function App() {
 
     setMessage("");
 
-    await sendMessage(trimmedMessage, mode.toLowerCase());
+    await sendMessage(
+      trimmedMessage,
+      mode.toLowerCase(),
+    );
+  };
+
+  const handleMessageChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const textarea = event.target;
+    const value = textarea.value;
+
+    setMessage(value);
+
+    // Reset height first so the textarea can shrink
+    // when text is deleted.
+    textarea.style.height = "auto";
+
+    // Grow with the content, up to 240px.
+    textarea.style.height = `${Math.min(
+      textarea.scrollHeight,
+      240,
+    )}px`;
   };
 
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
+    // Enter = send
+    // Shift + Enter = new line
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       void handleSend();
@@ -216,12 +240,10 @@ function App() {
           <section className="composer">
             <textarea
               value={message}
-              onChange={(event) =>
-                setMessage(event.target.value)
-              }
+              onChange={handleMessageChange}
               onKeyDown={handleKeyDown}
               placeholder={`Ask ForgeAI to ${mode.toLowerCase()}...`}
-              rows={4}
+              rows={1}
               disabled={isStreaming}
             />
 
@@ -247,7 +269,9 @@ function App() {
                   void handleSend();
                 }}
               >
-                {isStreaming ? "Thinking..." : "Send"}
+                {isStreaming
+                  ? "Thinking..."
+                  : "Send"}
 
                 <span>
                   {isStreaming ? "..." : "↑"}
