@@ -1,0 +1,22 @@
+{
+  "name": "forge-ai",
+  "version": "0.1.0",
+  "private": true,
+
+  "description": "ForgeAI — an AI software engineer built for developers.",
+
+  "packageManager": "pnpm@10.15.0",
+
+  "scripts": {
+    "dev:web": "pnpm --filter @forgeai/web dev",
+    "build:web": "pnpm --filter @forgeai/web build",
+    "lint:web": "pnpm --filter @forgeai/web lint",
+
+    "dev:api": "python apps/api/app/main.py",
+    "test:api": "python -m pytest apps/api/tests"
+  },
+
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

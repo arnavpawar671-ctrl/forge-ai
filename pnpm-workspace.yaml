@@ -1,0 +1,6 @@
+# Tell pnpm that ForgeAI is a monorepo.
+# Everything inside apps/* and packages/* becomes a workspace package.
+
+packages:
+  - "apps/*"
+  - "packages/*"

@@ -1,0 +1,655 @@
+/* ============================================
+   GLOBAL RESET
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+
+/* ============================================
+   ROOT
+   ============================================ */
+
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #e5e7eb;
+
+  background: #070a10;
+
+  font-synthesis: none;
+
+  text-rendering: optimizeLegibility;
+}
+
+
+/* ============================================
+   BODY
+   ============================================ */
+
+html,
+body,
+#root {
+  margin: 0;
+
+  width: 100%;
+  min-height: 100%;
+
+  background: #070a10;
+}
+
+
+body {
+  min-width: 320px;
+}
+
+
+/* ============================================
+   BUTTONS / INPUTS
+   ============================================ */
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+
+/* ============================================
+   APPLICATION
+   ============================================ */
+
+.app {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    radial-gradient(
+      circle at 50% -20%,
+      rgba(59, 130, 246, 0.13),
+      transparent 40%
+    ),
+
+    #070a10;
+}
+
+
+/* ============================================
+   TOP BAR
+   ============================================ */
+
+.topbar {
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 24px;
+
+  border-bottom: 1px solid #172033;
+
+  background: rgba(7, 10, 16, 0.82);
+
+  backdrop-filter: blur(18px);
+}
+
+
+/* ============================================
+   BRAND
+   ============================================ */
+
+.brand {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+
+  object-fit: contain;
+}
+
+
+.brand-text h1 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 750;
+
+  letter-spacing: -0.02em;
+}
+
+
+.brand-text p {
+  margin: 2px 0 0;
+
+  color: #68758d;
+
+  font-size: 11px;
+}
+
+
+/* ============================================
+   CONNECTION STATUS
+   ============================================ */
+
+.connection-status {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #7f8da5;
+
+  font-size: 12px;
+}
+
+
+.connection-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow:
+    0 0 10px rgba(34, 197, 94, 0.65);
+}
+
+
+/* ============================================
+   WORKSPACE
+   ============================================ */
+
+.workspace {
+  flex: 1;
+
+  display: flex;
+
+  min-height: calc(100vh - 72px);
+}
+
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+.sidebar {
+  width: 250px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 18px;
+
+  border-right: 1px solid #172033;
+
+  background: #090d15;
+}
+
+
+/* ============================================
+   NEW CHAT
+   ============================================ */
+
+.new-chat-button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #263550;
+  border-radius: 10px;
+
+  background: #101827;
+
+  color: #dbeafe;
+
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+
+.new-chat-button:hover {
+  background: #172238;
+
+  border-color: #3b82f6;
+
+  transform: translateY(-1px);
+}
+
+
+/* ============================================
+   SIDEBAR HEADING
+   ============================================ */
+
+.sidebar-heading {
+  margin:
+
+    28px 8px 9px;
+
+  color: #536078;
+
+  font-size: 10px;
+
+  font-weight: 750;
+
+  letter-spacing: 0.12em;
+}
+
+
+/* ============================================
+   MODE LIST
+   ============================================ */
+
+.mode-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+
+.mode-button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 9px 10px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #7f8da5;
+
+  text-align: left;
+
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+
+.mode-button:hover {
+  background: #111a2a;
+
+  color: #dbeafe;
+}
+
+
+.mode-button.active {
+  background: #111d31;
+
+  border-color: #1e3a62;
+
+  color: #dbeafe;
+}
+
+
+.mode-icon {
+  width: 20px;
+
+  text-align: center;
+}
+
+
+/* ============================================
+   SIDEBAR FOOTER
+   ============================================ */
+
+.sidebar-footer {
+  margin-top: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #172033;
+}
+
+
+.sidebar-footer > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.footer-label {
+  color: #4e5c72;
+
+  font-size: 9px;
+
+  font-weight: 750;
+
+  letter-spacing: 0.1em;
+}
+
+
+.footer-value {
+  color: #8795aa;
+
+  font-size: 11px;
+}
+
+
+/* ============================================
+   CHAT AREA
+   ============================================ */
+
+.chat-area {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 60px 32px 24px;
+}
+
+
+/* ============================================
+   WELCOME
+   ============================================ */
+
+.welcome {
+  width: 100%;
+
+  max-width: 700px;
+
+  text-align: center;
+}
+
+
+.welcome-logo {
+  width: 90px;
+  height: 90px;
+
+  margin-bottom: 20px;
+
+  filter:
+    drop-shadow(
+      0 0 30px rgba(59, 130, 246, 0.25)
+    );
+}
+
+
+/* ============================================
+   MODE BADGE
+   ============================================ */
+
+.mode-badge {
+  width: fit-content;
+
+  margin: 0 auto 14px;
+
+  padding: 5px 10px;
+
+  border: 1px solid #1d3558;
+
+  border-radius: 999px;
+
+  background: #0d1728;
+
+  color: #73aefc;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.04em;
+}
+
+
+/* ============================================
+   WELCOME TITLE
+   ============================================ */
+
+.welcome h2 {
+  margin: 0;
+
+  font-size: clamp(
+    32px,
+    5vw,
+    52px
+  );
+
+  line-height: 1.05;
+
+  letter-spacing: -0.045em;
+
+  background:
+    linear-gradient(
+      90deg,
+      #e0f2fe,
+      #60a5fa,
+      #818cf8
+    );
+
+  -webkit-background-clip: text;
+
+  background-clip: text;
+
+  color: transparent;
+}
+
+
+.welcome p {
+  max-width: 610px;
+
+  margin: 18px auto 0;
+
+  color: #718099;
+
+  font-size: 15px;
+
+  line-height: 1.7;
+}
+
+
+/* ============================================
+   COMPOSER
+   ============================================ */
+
+.composer {
+  width: 100%;
+
+  max-width: 850px;
+
+  margin-top: 50px;
+
+  overflow: hidden;
+
+  border: 1px solid #263550;
+
+  border-radius: 16px;
+
+  background: #0c121e;
+
+  box-shadow:
+    0 20px 70px rgba(0, 0, 0, 0.28),
+    0 0 30px rgba(59, 130, 246, 0.04);
+}
+
+
+.composer textarea {
+  width: 100%;
+
+  display: block;
+
+  resize: none;
+
+  padding: 18px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #e5e7eb;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+
+.composer textarea::placeholder {
+  color: #4f5d73;
+}
+
+
+/* ============================================
+   COMPOSER TOOLBAR
+   ============================================ */
+
+.composer-toolbar {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 8px 10px 10px 15px;
+}
+
+
+.composer-info {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #536078;
+
+  font-size: 10px;
+}
+
+
+.separator {
+  color: #344158;
+}
+
+
+/* ============================================
+   SEND BUTTON
+   ============================================ */
+
+.send-button {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 8px 14px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #2563eb;
+
+  color: white;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+
+.send-button:hover:not(:disabled) {
+  background: #3b82f6;
+
+  transform: translateY(-1px);
+}
+
+
+.send-button:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+}
+
+
+/* ============================================
+   COMPOSER HINT
+   ============================================ */
+
+.composer-hint {
+  margin: 12px 0 0;
+
+  color: #3f4b5f;
+
+  font-size: 10px;
+
+  text-align: center;
+}
+
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 720px) {
+
+  .sidebar {
+    display: none;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .chat-area {
+    padding: 45px 16px 20px;
+  }
+
+  .welcome h2 {
+    font-size: 34px;
+  }
+
+  .connection-status span:last-child {
+    display: none;
+  }
+}
