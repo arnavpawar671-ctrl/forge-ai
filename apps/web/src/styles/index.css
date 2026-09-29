@@ -1,15 +1,14 @@
-/* ============================================
+/* =========================================
    GLOBAL RESET
-   ============================================ */
+   ========================================= */
 
 * {
   box-sizing: border-box;
 }
 
-
-/* ============================================
+/* =========================================
    ROOT
-   ============================================ */
+   ========================================= */
 
 :root {
   font-family:
@@ -22,39 +21,32 @@
     sans-serif;
 
   color: #e5e7eb;
-
   background: #070a10;
 
   font-synthesis: none;
-
   text-rendering: optimizeLegibility;
 }
 
-
-/* ============================================
+/* =========================================
    BODY
-   ============================================ */
+   ========================================= */
 
 html,
 body,
 #root {
   margin: 0;
-
   width: 100%;
   min-height: 100%;
-
   background: #070a10;
 }
-
 
 body {
   min-width: 320px;
 }
 
-
-/* ============================================
+/* =========================================
    BUTTONS / INPUTS
-   ============================================ */
+   ========================================= */
 
 button,
 textarea {
@@ -65,14 +57,12 @@ button {
   cursor: pointer;
 }
 
-
-/* ============================================
+/* =========================================
    APPLICATION
-   ============================================ */
+   ========================================= */
 
 .app {
   min-height: 100vh;
-
   display: flex;
   flex-direction: column;
 
@@ -82,14 +72,12 @@ button {
       rgba(59, 130, 246, 0.13),
       transparent 40%
     ),
-
     #070a10;
 }
 
-
-/* ============================================
+/* =========================================
    TOP BAR
-   ============================================ */
+   ========================================= */
 
 .topbar {
   height: 72px;
@@ -107,61 +95,49 @@ button {
   backdrop-filter: blur(18px);
 }
 
-
-/* ============================================
+/* =========================================
    BRAND
-   ============================================ */
+   ========================================= */
 
 .brand {
   display: flex;
   align-items: center;
-
   gap: 12px;
 }
-
 
 .brand-logo {
   width: 42px;
   height: 42px;
-
   object-fit: contain;
 }
-
 
 .brand-text h1 {
   margin: 0;
 
   font-size: 18px;
   font-weight: 750;
-
   letter-spacing: -0.02em;
 }
-
 
 .brand-text p {
   margin: 2px 0 0;
 
   color: #68758d;
-
   font-size: 11px;
 }
 
-
-/* ============================================
+/* =========================================
    CONNECTION STATUS
-   ============================================ */
+   ========================================= */
 
 .connection-status {
   display: flex;
   align-items: center;
-
   gap: 8px;
 
   color: #7f8da5;
-
   font-size: 12px;
 }
-
 
 .connection-dot {
   width: 8px;
@@ -175,10 +151,9 @@ button {
     0 0 10px rgba(34, 197, 94, 0.65);
 }
 
-
-/* ============================================
+/* =========================================
    WORKSPACE
-   ============================================ */
+   ========================================= */
 
 .workspace {
   flex: 1;
@@ -188,10 +163,9 @@ button {
   min-height: calc(100vh - 72px);
 }
 
-
-/* ============================================
+/* =========================================
    SIDEBAR
-   ============================================ */
+   ========================================= */
 
 .sidebar {
   width: 250px;
@@ -206,10 +180,9 @@ button {
   background: #090d15;
 }
 
-
-/* ============================================
+/* =========================================
    NEW CHAT
-   ============================================ */
+   ========================================= */
 
 .new-chat-button {
   width: 100%;
@@ -226,7 +199,6 @@ button {
   border-radius: 10px;
 
   background: #101827;
-
   color: #dbeafe;
 
   transition:
@@ -235,38 +207,31 @@ button {
     transform 0.2s;
 }
 
-
 .new-chat-button:hover {
   background: #172238;
-
   border-color: #3b82f6;
 
   transform: translateY(-1px);
 }
 
-
-/* ============================================
+/* =========================================
    SIDEBAR HEADING
-   ============================================ */
+   ========================================= */
 
 .sidebar-heading {
-  margin:
-
-    28px 8px 9px;
+  margin: 28px 8px 9px;
 
   color: #536078;
 
   font-size: 10px;
-
   font-weight: 750;
 
   letter-spacing: 0.12em;
 }
 
-
-/* ============================================
+/* =========================================
    MODE LIST
-   ============================================ */
+   ========================================= */
 
 .mode-list {
   display: flex;
@@ -274,7 +239,6 @@ button {
 
   gap: 4px;
 }
-
 
 .mode-button {
   width: 100%;
@@ -301,13 +265,10 @@ button {
     border-color 0.2s;
 }
 
-
 .mode-button:hover {
   background: #111a2a;
-
   color: #dbeafe;
 }
-
 
 .mode-button.active {
   background: #111d31;
@@ -317,17 +278,19 @@ button {
   color: #dbeafe;
 }
 
+.mode-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
 
 .mode-icon {
   width: 20px;
-
   text-align: center;
 }
 
-
-/* ============================================
+/* =========================================
    SIDEBAR FOOTER
-   ============================================ */
+   ========================================= */
 
 .sidebar-footer {
   margin-top: auto;
@@ -342,24 +305,20 @@ button {
   border-top: 1px solid #172033;
 }
 
-
 .sidebar-footer > div {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-
 .footer-label {
   color: #4e5c72;
 
   font-size: 9px;
-
   font-weight: 750;
 
   letter-spacing: 0.1em;
 }
-
 
 .footer-value {
   color: #8795aa;
@@ -367,36 +326,38 @@ button {
   font-size: 11px;
 }
 
-
-/* ============================================
+/* =========================================
    CHAT AREA
-   ============================================ */
+   ========================================= */
 
 .chat-area {
   flex: 1;
+
+  min-width: 0;
+  min-height: 0;
 
   display: flex;
   flex-direction: column;
 
   align-items: center;
-  justify-content: center;
 
-  padding: 60px 32px 24px;
+  padding: 40px 32px 24px;
+
+  overflow: hidden;
 }
 
-
-/* ============================================
+/* =========================================
    WELCOME
-   ============================================ */
+   ========================================= */
 
 .welcome {
   width: 100%;
-
   max-width: 700px;
+
+  margin: auto 0;
 
   text-align: center;
 }
-
 
 .welcome-logo {
   width: 90px;
@@ -410,10 +371,9 @@ button {
     );
 }
 
-
-/* ============================================
+/* =========================================
    MODE BADGE
-   ============================================ */
+   ========================================= */
 
 .mode-badge {
   width: fit-content;
@@ -423,7 +383,6 @@ button {
   padding: 5px 10px;
 
   border: 1px solid #1d3558;
-
   border-radius: 999px;
 
   background: #0d1728;
@@ -431,25 +390,19 @@ button {
   color: #73aefc;
 
   font-size: 10px;
-
   font-weight: 700;
 
   letter-spacing: 0.04em;
 }
 
-
-/* ============================================
+/* =========================================
    WELCOME TITLE
-   ============================================ */
+   ========================================= */
 
 .welcome h2 {
   margin: 0;
 
-  font-size: clamp(
-    32px,
-    5vw,
-    52px
-  );
+  font-size: clamp(32px, 5vw, 52px);
 
   line-height: 1.05;
 
@@ -464,12 +417,10 @@ button {
     );
 
   -webkit-background-clip: text;
-
   background-clip: text;
 
   color: transparent;
 }
-
 
 .welcome p {
   max-width: 610px;
@@ -483,17 +434,181 @@ button {
   line-height: 1.7;
 }
 
+/* =========================================
+   CHAT MESSAGES
+   ========================================= */
 
-/* ============================================
+.messages {
+  width: 100%;
+  max-width: 960px;
+
+  flex: 1;
+
+  margin: 0 auto;
+
+  padding: 20px 24px 30px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: #263550 transparent;
+}
+
+.messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: #263550;
+  border-radius: 999px;
+}
+
+/* =========================================
+   MESSAGE ROW
+   ========================================= */
+
+.message-row {
+  width: 100%;
+
+  display: flex;
+}
+
+.message-row-assistant {
+  justify-content: flex-start;
+}
+
+.message-row-user {
+  justify-content: flex-end;
+}
+
+/* =========================================
+   MESSAGE WRAPPER
+   ========================================= */
+
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  max-width: min(78%, 760px);
+}
+
+.message-wrapper-assistant {
+  align-items: flex-start;
+}
+
+.message-wrapper-user {
+  align-items: flex-end;
+}
+
+/* =========================================
+   MESSAGE ROLE
+   ========================================= */
+
+.message-role {
+  padding: 0 4px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  letter-spacing: 0.02em;
+
+  opacity: 0.65;
+}
+
+.message-role-assistant {
+  text-align: left;
+}
+
+.message-role-user {
+  text-align: right;
+}
+
+/* =========================================
+   MESSAGE BUBBLE
+   ========================================= */
+
+.message-bubble {
+  padding: 13px 17px;
+
+  border-radius: 16px;
+
+  font-size: 15px;
+  line-height: 1.65;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  word-break: break-word;
+}
+
+/* =========================================
+   FORGEAI MESSAGE — LEFT
+   ========================================= */
+
+.message-bubble-assistant {
+  background: rgba(255, 255, 255, 0.045);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  border-top-left-radius: 6px;
+
+  color: #dce5f2;
+
+  text-align: left;
+}
+
+/* =========================================
+   USER MESSAGE — RIGHT
+   ========================================= */
+
+.message-bubble-user {
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #4f46e5
+    );
+
+  border: 1px solid rgba(99, 102, 241, 0.35);
+
+  border-top-right-radius: 6px;
+
+  color: #ffffff;
+
+  text-align: left;
+}
+
+/* =========================================
+   THINKING
+   ========================================= */
+
+.thinking {
+  opacity: 0.65;
+
+  font-style: italic;
+}
+
+/* =========================================
    COMPOSER
-   ============================================ */
+   ========================================= */
 
 .composer {
   width: 100%;
-
   max-width: 850px;
 
-  margin-top: 50px;
+  margin-top: 18px;
 
   overflow: hidden;
 
@@ -506,17 +621,39 @@ button {
   box-shadow:
     0 20px 70px rgba(0, 0, 0, 0.28),
     0 0 30px rgba(59, 130, 246, 0.04);
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
+.composer:focus-within {
+  border-color: #31558a;
+
+  box-shadow:
+    0 20px 70px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(59, 130, 246, 0.08);
+}
+
+/* =========================================
+   AUTO EXPANDING TEXTAREA
+   ========================================= */
 
 .composer textarea {
   width: 100%;
 
   display: block;
 
+  min-height: 52px;
+  max-height: 240px;
+
+  height: 52px;
+
   resize: none;
 
-  padding: 18px;
+  overflow-y: auto;
+
+  padding: 15px 18px;
 
   border: 0;
   outline: 0;
@@ -528,17 +665,38 @@ button {
   font-size: 14px;
 
   line-height: 1.6;
+
+  box-sizing: border-box;
+
+  scrollbar-width: thin;
+  scrollbar-color: #263550 transparent;
 }
 
+.composer textarea::-webkit-scrollbar {
+  width: 5px;
+}
+
+.composer textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.composer textarea::-webkit-scrollbar-thumb {
+  background: #263550;
+  border-radius: 999px;
+}
 
 .composer textarea::placeholder {
   color: #4f5d73;
 }
 
+.composer textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-/* ============================================
+/* =========================================
    COMPOSER TOOLBAR
-   ============================================ */
+   ========================================= */
 
 .composer-toolbar {
   display: flex;
@@ -546,13 +704,15 @@ button {
   align-items: center;
   justify-content: space-between;
 
+  gap: 12px;
+
   padding: 8px 10px 10px 15px;
 }
 
-
 .composer-info {
-  display: flex;
+  min-width: 0;
 
+  display: flex;
   align-items: center;
 
   gap: 7px;
@@ -560,19 +720,23 @@ button {
   color: #536078;
 
   font-size: 10px;
-}
 
+  white-space: nowrap;
+
+  overflow: hidden;
+}
 
 .separator {
   color: #344158;
 }
 
-
-/* ============================================
+/* =========================================
    SEND BUTTON
-   ============================================ */
+   ========================================= */
 
 .send-button {
+  flex-shrink: 0;
+
   display: flex;
   align-items: center;
 
@@ -581,7 +745,6 @@ button {
   padding: 8px 14px;
 
   border: 0;
-
   border-radius: 9px;
 
   background: #2563eb;
@@ -589,14 +752,13 @@ button {
   color: white;
 
   font-size: 12px;
-
   font-weight: 700;
 
   transition:
     background 0.2s,
-    transform 0.2s;
+    transform 0.2s,
+    opacity 0.2s;
 }
-
 
 .send-button:hover:not(:disabled) {
   background: #3b82f6;
@@ -604,35 +766,38 @@ button {
   transform: translateY(-1px);
 }
 
-
 .send-button:disabled {
   opacity: 0.35;
 
   cursor: not-allowed;
+
+  transform: none;
 }
 
-
-/* ============================================
+/* =========================================
    COMPOSER HINT
-   ============================================ */
+   ========================================= */
 
 .composer-hint {
-  margin: 12px 0 0;
+  width: 100%;
+  max-width: 850px;
+
+  margin: 10px 0 0;
 
   color: #3f4b5f;
 
   font-size: 10px;
 
+  line-height: 1.5;
+
   text-align: center;
 }
 
-
-/* ============================================
+/* =========================================
    RESPONSIVE
-   ============================================ */
+   ========================================= */
 
 @media (max-width: 720px) {
-
   .sidebar {
     display: none;
   }
@@ -642,120 +807,24 @@ button {
   }
 
   .chat-area {
-    padding: 45px 16px 20px;
+    padding: 24px 12px 18px;
+  }
+
+  .welcome {
+    margin: auto 0;
   }
 
   .welcome h2 {
     font-size: 34px;
   }
 
-  .connection-status span:last-child {
-    display: none;
+  .welcome p {
+    font-size: 14px;
   }
-}
 
-/* =========================================
-   FORGEAI CHAT MESSAGES
-   ========================================= */
-
-.messages {
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 28px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.message-row {
-  width: 100%;
-  display: flex;
-}
-
-.message-row-assistant {
-  justify-content: flex-start;
-}
-
-.message-row-user {
-  justify-content: flex-end;
-}
-
-.message-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-width: min(78%, 760px);
-}
-
-.message-wrapper-assistant {
-  align-items: flex-start;
-}
-
-.message-wrapper-user {
-  align-items: flex-end;
-}
-
-.message-role {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  opacity: 0.65;
-  padding: 0 4px;
-}
-
-.message-role-assistant {
-  text-align: left;
-}
-
-.message-role-user {
-  text-align: right;
-}
-
-.message-bubble {
-  padding: 13px 17px;
-  border-radius: 16px;
-  font-size: 15px;
-  line-height: 1.65;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-/* ForgeAI — LEFT */
-
-.message-bubble-assistant {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top-left-radius: 6px;
-  text-align: left;
-}
-
-/* User — RIGHT */
-
-.message-bubble-user {
-  background: linear-gradient(
-    135deg,
-    #2563eb,
-    #4f46e5
-  );
-  border-top-right-radius: 6px;
-  text-align: left;
-}
-
-/* Streaming indicator */
-
-.thinking {
-  opacity: 0.65;
-  font-style: italic;
-}
-
-/* Mobile */
-
-@media (max-width: 720px) {
   .messages {
-    padding: 20px 14px;
+    padding: 14px 6px 20px;
+
     gap: 18px;
   }
 
@@ -764,7 +833,73 @@ button {
   }
 
   .message-bubble {
-    font-size: 14px;
     padding: 11px 14px;
+
+    font-size: 14px;
+  }
+
+  .composer {
+    margin-top: 12px;
+
+    border-radius: 14px;
+  }
+
+  .composer-toolbar {
+    align-items: flex-end;
+  }
+
+  .composer-info {
+    font-size: 9px;
+  }
+
+  .composer-info span:nth-child(3),
+  .composer-info span:nth-child(4),
+  .composer-info span:nth-child(5) {
+    display: none;
+  }
+
+  .composer-hint {
+    padding: 0 8px;
+
+    font-size: 9px;
+  }
+
+  .connection-status span:last-child {
+    display: none;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE
+   ========================================= */
+
+@media (max-width: 450px) {
+  .brand-text p {
+    display: none;
+  }
+
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .topbar {
+    height: 64px;
+  }
+
+  .workspace {
+    min-height: calc(100vh - 64px);
+  }
+
+  .message-wrapper {
+    max-width: 92%;
+  }
+
+  .composer-info {
+    display: none;
+  }
+
+  .composer-toolbar {
+    justify-content: flex-end;
   }
 }
