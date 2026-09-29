@@ -1,1 +1,9 @@
 node_modules
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]

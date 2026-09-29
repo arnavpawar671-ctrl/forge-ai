@@ -1,13 +1,17 @@
 import React, { useState } from "react";
+import { useChat } from "../features/chat/hooks/useChat";
 
 function App() {
-  // Stores whatever the user is currently typing.
+  const {
+    messages,
+    isStreaming,
+    sendMessage,
+  } = useChat();
+
   const [message, setMessage] = useState("");
 
-  // Currently selected engineering mode.
   const [mode, setMode] = useState("Explain");
 
-  // Engineering modes supported by ForgeAI.
   const modes = [
     "Explain",
     "Debug",
@@ -19,18 +23,40 @@ function App() {
     "DevOps",
   ];
 
+  const handleSend = async () => {
+    const trimmedMessage = message.trim();
+
+    if (!trimmedMessage || isStreaming) {
+      return;
+    }
+
+    setMessage("");
+
+    await sendMessage(
+      trimmedMessage,
+      mode.toLowerCase(),
+    );
+  };
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    // Enter sends the message.
+    // Shift + Enter creates a new line.
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void handleSend();
+    }
+  };
+
   return (
     <div className="app">
-
       {/* =========================================
           TOP NAVIGATION
           ========================================= */}
 
       <header className="topbar">
-
         <div className="brand">
-
-          {/* ForgeAI logo */}
           <img
             src="/logo.svg"
             alt="ForgeAI"
@@ -40,26 +66,18 @@ function App() {
           <div className="brand-text">
             <h1>ForgeAI</h1>
 
-            <p>
-              AI Software Engineer
-            </p>
+            <p>AI Software Engineer</p>
           </div>
-
         </div>
 
-        {/* Backend connection indicator */}
         <div className="connection-status">
-
           <span className="connection-dot" />
 
           <span>
             Backend connected
           </span>
-
         </div>
-
       </header>
-
 
       {/* =========================================
           MAIN WORKSPACE
@@ -67,42 +85,33 @@ function App() {
 
       <div className="workspace">
 
-
         {/* =========================================
             SIDEBAR
             ========================================= */}
 
         <aside className="sidebar">
-
           <button className="new-chat-button">
             <span>＋</span>
             New conversation
           </button>
 
-
           <div className="sidebar-heading">
             ENGINEERING MODES
           </div>
 
-
           <nav className="mode-list">
-
             {modes.map((item) => (
-
               <button
                 key={item}
-
                 className={
                   mode === item
                     ? "mode-button active"
                     : "mode-button"
                 }
-
                 onClick={() => setMode(item)}
+                disabled={isStreaming}
               >
-
                 <span className="mode-icon">
-
                   {item === "Explain" && "💡"}
                   {item === "Debug" && "🐛"}
                   {item === "Architect" && "🏗️"}
@@ -111,24 +120,14 @@ function App() {
                   {item === "Test" && "🧪"}
                   {item === "Security" && "🛡️"}
                   {item === "DevOps" && "🚀"}
-
                 </span>
 
-                <span>
-                  {item}
-                </span>
-
+                <span>{item}</span>
               </button>
-
             ))}
-
           </nav>
 
-
-          {/* Sidebar footer */}
-
           <div className="sidebar-footer">
-
             <div>
               <span className="footer-label">
                 MODEL
@@ -148,11 +147,8 @@ function App() {
                 {mode}
               </span>
             </div>
-
           </div>
-
         </aside>
-
 
         {/* =========================================
             CHAT AREA
@@ -160,59 +156,81 @@ function App() {
 
         <main className="chat-area">
 
+          {/* =========================================
+              MESSAGES
+              ========================================= */}
 
-          {/* Welcome section */}
+          {messages.length === 0 ? (
+            <section className="welcome">
+              <img
+                src="/logo.svg"
+                alt=""
+                className="welcome-logo"
+              />
 
-          <section className="welcome">
+              <div className="mode-badge">
+                {mode} Mode
+              </div>
 
-            <img
-              src="/logo.svg"
-              alt=""
-              className="welcome-logo"
-            />
+              <h2>
+                Build something powerful.
+              </h2>
 
-            <div className="mode-badge">
-              {mode} Mode
-            </div>
+              <p>
+                ForgeAI is your AI software engineer
+                for coding, debugging, architecture,
+                testing, security and DevOps.
+              </p>
+            </section>
+          ) : (
+            <section className="messages">
+              {messages.map((item, index) => (
+                <div
+                  key={`${item.role}-${index}`}
+                  className={
+                    item.role === "user"
+                      ? "message message-user"
+                      : "message message-assistant"
+                  }
+                >
+                  <div className="message-role">
+                    {item.role === "user"
+                      ? "You"
+                      : "ForgeAI"}
+                  </div>
 
-            <h2>
-              Build something powerful.
-            </h2>
-
-            <p>
-              ForgeAI is your AI software engineer for
-              coding, debugging, architecture, testing,
-              security and DevOps.
-            </p>
-
-          </section>
-
+                  <div className="message-content">
+                    {item.content ||
+                      (isStreaming &&
+                      index === messages.length - 1
+                        ? "Thinking..."
+                        : "")}
+                  </div>
+                </div>
+              ))}
+            </section>
+          )}
 
           {/* =========================================
               CHAT COMPOSER
               ========================================= */}
 
           <section className="composer">
-
             <textarea
               value={message}
-
               onChange={(event) =>
                 setMessage(event.target.value)
               }
-
+              onKeyDown={handleKeyDown}
               placeholder={
                 `Ask ForgeAI to ${mode.toLowerCase()}...`
               }
-
               rows={4}
+              disabled={isStreaming}
             />
 
-
             <div className="composer-toolbar">
-
               <div className="composer-info">
-
                 <span>
                   {mode} Mode
                 </span>
@@ -225,46 +243,43 @@ function App() {
                   Groq
                 </span>
 
-              </div>
+                <span className="separator">
+                  •
+                </span>
 
+                <span>
+                  Enter to send
+                </span>
+              </div>
 
               <button
                 className="send-button"
-
-                disabled={!message.trim()}
-
+                disabled={
+                  !message.trim() ||
+                  isStreaming
+                }
                 onClick={() => {
-                  console.log(
-                    "Message:",
-                    message,
-                  );
-
-                  console.log(
-                    "Mode:",
-                    mode,
-                  );
+                  void handleSend();
                 }}
               >
-                Send
-                <span>↑</span>
+                {isStreaming
+                  ? "Thinking..."
+                  : "Send"}
+
+                <span>
+                  {isStreaming ? "..." : "↑"}
+                </span>
               </button>
-
             </div>
-
           </section>
 
-
-          {/* Small disclaimer */}
-
           <p className="composer-hint">
-            ForgeAI can make mistakes. Review generated
+            Enter to send • Shift + Enter for a new line
+            • ForgeAI can make mistakes. Review generated
             code before using it in production.
           </p>
-
         </main>
-
       </div>
-
     </div>
   );
 }
