@@ -1,0 +1,15 @@
+name: Deployment Scaffold
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-placeholder:
+    name: Deployment target not configured
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain deployment status
+        run: echo "Configure a deployment target and credentials before adding deploy steps."

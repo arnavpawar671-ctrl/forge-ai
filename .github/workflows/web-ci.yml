@@ -1,0 +1,26 @@
+name: Web CI
+
+on:
+  push:
+    paths:
+      - "apps/web/**"
+      - "package.json"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "apps/web/**"
+      - "package.json"
+      - ".github/workflows/web-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-scaffold:
+    name: Validate web scaffold
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check web entry points
+        run: test -f package.json && test -f apps/web/src/main.tsx

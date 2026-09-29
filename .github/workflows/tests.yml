@@ -1,0 +1,26 @@
+name: Test Structure
+
+on:
+  push:
+    paths:
+      - "tests/**"
+      - "apps/api/tests/**"
+      - ".github/workflows/tests.yml"
+  pull_request:
+    paths:
+      - "tests/**"
+      - "apps/api/tests/**"
+      - ".github/workflows/tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-structure:
+    name: Verify test directories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check test locations
+        run: test -d tests/e2e && test -d apps/api/tests/unit && test -d apps/api/tests/integration && test -d apps/api/tests/e2e
