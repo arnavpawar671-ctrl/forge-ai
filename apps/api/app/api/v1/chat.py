@@ -1,13 +1,17 @@
-from collections.abc import AsyncGenerator
+from __future__ import annotations
+
 import json
+from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from groq import Groq
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
-
+from app.application.chat.send_message import (
+    SendMessageCommand,
+    send_message_service,
+)
+from app.infrastructure.ai.base import AIMessage
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -20,102 +24,37 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1)
     mode: str = "explain"
+    personality: str = "senior_engineer"
+    model: str | None = None
+    conversation_id: str | None = None
+    user_id: str | None = None
 
 
-def build_system_prompt(mode: str) -> str:
-    """Build ForgeAI's engineering-focused system prompt."""
-
-    mode_instructions = {
-        "explain": "Explain concepts clearly and technically.",
-        "debug": "Analyze bugs systematically. Identify the cause, evidence, and fix.",
-        "architect": "Design robust, scalable software architectures and explain trade-offs.",
-        "review": "Review code for correctness, maintainability, security, and performance.",
-        "implement": "Write production-quality implementation code with clear reasoning.",
-        "test": "Design comprehensive unit, integration, and end-to-end tests.",
-        "security": "Analyze software security risks and recommend defensive fixes.",
-        "devops": "Help with CI/CD, containers, deployment, infrastructure, and observability.",
-    }
-
-    instruction = mode_instructions.get(
-        mode.lower(),
-        mode_instructions["explain"],
-    )
-
-    return f"""
-You are ForgeAI, an advanced AI software engineer.
-
-You help developers with:
-- software engineering
-- debugging
-- architecture
-- code review
-- implementation
-- testing
-- security
-- DevOps
-- performance
-- technical problem solving
-
-Current engineering mode:
-{mode}
-
-Mode instruction:
-{instruction}
-
-Rules:
-- Give technically accurate answers.
-- Prefer practical solutions.
-- Explain important trade-offs.
-- When writing code, make it production-oriented.
-- Never expose secrets or API keys.
-- If information is uncertain, say so.
-- Do not pretend to have executed code you have not executed.
-- Keep responses structured and readable.
-""".strip()
-
-
-def stream_groq(
-    messages: list[ChatMessage],
-    mode: str,
-) -> AsyncGenerator[str, None]:
-    """
-    Stream tokens from Groq to the browser using SSE.
-    """
-
-    client = Groq(api_key=settings.groq_api_key)
-
-    groq_messages = [
-        {
-            "role": "system",
-            "content": build_system_prompt(mode),
-        }
-    ]
-
-    groq_messages.extend(
-        {
-            "role": message.role,
-            "content": message.content,
-        }
-        for message in messages
+async def generate_stream(
+    request: ChatRequest,
+) -> AsyncIterator[str]:
+    command = SendMessageCommand(
+        messages=[
+            AIMessage(
+                role=message.role,
+                content=message.content,
+            )
+            for message in request.messages
+        ],
+        mode=request.mode,
+        personality=request.personality,
+        model=request.model,
+        user_id=request.user_id,
+        conversation_id=request.conversation_id,
     )
 
     try:
-        stream = client.chat.completions.create(
-            model=settings.groq_model,
-            messages=groq_messages,
-            temperature=0.2,
-            max_completion_tokens=4096,
-            stream=True,
-        )
-
-        for chunk in stream:
-            content = chunk.choices[0].delta.content
-
-            if content:
+        async for chunk in send_message_service.stream(command):
+            if chunk.content:
                 payload = json.dumps(
                     {
                         "type": "token",
-                        "content": content,
+                        "content": chunk.content,
                     }
                 )
 
@@ -124,29 +63,26 @@ def stream_groq(
         yield 'data: {"type":"done"}\n\n'
 
     except Exception as exc:
-        error = json.dumps(
+        payload = json.dumps(
             {
                 "type": "error",
                 "message": str(exc),
             }
         )
 
-        yield f"data: {error}\n\n"
+        yield f"data: {payload}\n\n"
 
 
 @router.post("")
 async def chat(request: ChatRequest):
-    if not settings.groq_api_key:
+    if not request.messages:
         raise HTTPException(
-            status_code=500,
-            detail="GROQ_API_KEY is not configured.",
+            status_code=400,
+            detail="At least one message is required.",
         )
 
     return StreamingResponse(
-        stream_groq(
-            request.messages,
-            request.mode,
-        ),
+        generate_stream(request),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
