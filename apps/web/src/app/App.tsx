@@ -2,14 +2,9 @@ import React, { useState } from "react";
 import { useChat } from "../features/chat/hooks/useChat";
 
 function App() {
-  const {
-    messages,
-    isStreaming,
-    sendMessage,
-  } = useChat();
+  const { messages, isStreaming, sendMessage } = useChat();
 
   const [message, setMessage] = useState("");
-
   const [mode, setMode] = useState("Explain");
 
   const modes = [
@@ -32,17 +27,12 @@ function App() {
 
     setMessage("");
 
-    await sendMessage(
-      trimmedMessage,
-      mode.toLowerCase(),
-    );
+    await sendMessage(trimmedMessage, mode.toLowerCase());
   };
 
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
-    // Enter sends the message.
-    // Shift + Enter creates a new line.
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       void handleSend();
@@ -65,17 +55,13 @@ function App() {
 
           <div className="brand-text">
             <h1>ForgeAI</h1>
-
             <p>AI Software Engineer</p>
           </div>
         </div>
 
         <div className="connection-status">
           <span className="connection-dot" />
-
-          <span>
-            Backend connected
-          </span>
+          <span>Backend connected</span>
         </div>
       </header>
 
@@ -84,7 +70,6 @@ function App() {
           ========================================= */}
 
       <div className="workspace">
-
         {/* =========================================
             SIDEBAR
             ========================================= */}
@@ -129,23 +114,13 @@ function App() {
 
           <div className="sidebar-footer">
             <div>
-              <span className="footer-label">
-                MODEL
-              </span>
-
-              <span className="footer-value">
-                Groq
-              </span>
+              <span className="footer-label">MODEL</span>
+              <span className="footer-value">Groq</span>
             </div>
 
             <div>
-              <span className="footer-label">
-                MODE
-              </span>
-
-              <span className="footer-value">
-                {mode}
-              </span>
+              <span className="footer-label">MODE</span>
+              <span className="footer-value">{mode}</span>
             </div>
           </div>
         </aside>
@@ -155,9 +130,8 @@ function App() {
             ========================================= */}
 
         <main className="chat-area">
-
           {/* =========================================
-              MESSAGES
+              MESSAGES / WELCOME
               ========================================= */}
 
           {messages.length === 0 ? (
@@ -172,42 +146,66 @@ function App() {
                 {mode} Mode
               </div>
 
-              <h2>
-                Build something powerful.
-              </h2>
+              <h2>Build something powerful.</h2>
 
               <p>
-                ForgeAI is your AI software engineer
-                for coding, debugging, architecture,
-                testing, security and DevOps.
+                ForgeAI is your AI software engineer for
+                coding, debugging, architecture, testing,
+                security and DevOps.
               </p>
             </section>
           ) : (
             <section className="messages">
-              {messages.map((item, index) => (
-                <div
-                  key={`${item.role}-${index}`}
-                  className={
-                    item.role === "user"
-                      ? "message message-user"
-                      : "message message-assistant"
-                  }
-                >
-                  <div className="message-role">
-                    {item.role === "user"
-                      ? "You"
-                      : "ForgeAI"}
-                  </div>
+              {messages.map((item, index) => {
+                const isUser = item.role === "user";
+                const isLastMessage =
+                  index === messages.length - 1;
 
-                  <div className="message-content">
-                    {item.content ||
-                      (isStreaming &&
-                      index === messages.length - 1
-                        ? "Thinking..."
-                        : "")}
+                return (
+                  <div
+                    key={`${item.role}-${index}`}
+                    className={`message-row ${
+                      isUser
+                        ? "message-row-user"
+                        : "message-row-assistant"
+                    }`}
+                  >
+                    <div
+                      className={`message-wrapper ${
+                        isUser
+                          ? "message-wrapper-user"
+                          : "message-wrapper-assistant"
+                      }`}
+                    >
+                      <div
+                        className={`message-role ${
+                          isUser
+                            ? "message-role-user"
+                            : "message-role-assistant"
+                        }`}
+                      >
+                        {isUser ? "You" : "ForgeAI"}
+                      </div>
+
+                      <div
+                        className={`message-bubble ${
+                          isUser
+                            ? "message-bubble-user"
+                            : "message-bubble-assistant"
+                        }`}
+                      >
+                        {item.content ? (
+                          item.content
+                        ) : isStreaming && isLastMessage ? (
+                          <span className="thinking">
+                            Thinking...
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </section>
           )}
 
@@ -222,49 +220,34 @@ function App() {
                 setMessage(event.target.value)
               }
               onKeyDown={handleKeyDown}
-              placeholder={
-                `Ask ForgeAI to ${mode.toLowerCase()}...`
-              }
+              placeholder={`Ask ForgeAI to ${mode.toLowerCase()}...`}
               rows={4}
               disabled={isStreaming}
             />
 
             <div className="composer-toolbar">
               <div className="composer-info">
-                <span>
-                  {mode} Mode
-                </span>
+                <span>{mode} Mode</span>
 
-                <span className="separator">
-                  •
-                </span>
+                <span className="separator">•</span>
 
-                <span>
-                  Groq
-                </span>
+                <span>Groq</span>
 
-                <span className="separator">
-                  •
-                </span>
+                <span className="separator">•</span>
 
-                <span>
-                  Enter to send
-                </span>
+                <span>Enter to send</span>
               </div>
 
               <button
                 className="send-button"
                 disabled={
-                  !message.trim() ||
-                  isStreaming
+                  !message.trim() || isStreaming
                 }
                 onClick={() => {
                   void handleSend();
                 }}
               >
-                {isStreaming
-                  ? "Thinking..."
-                  : "Send"}
+                {isStreaming ? "Thinking..." : "Send"}
 
                 <span>
                   {isStreaming ? "..." : "↑"}
