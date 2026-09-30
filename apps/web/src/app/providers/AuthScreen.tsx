@@ -19,13 +19,11 @@ export function AuthScreen() {
       const normalizedEmail = email.trim();
 
       if (!normalizedEmail) {
-        setMessage("Please enter your email address.");
-        return;
+        throw new Error("Please enter your email address.");
       }
 
       if (password.length < 6) {
-        setMessage("Password must be at least 6 characters.");
-        return;
+        throw new Error("Password must be at least 6 characters.");
       }
 
       if (mode === "signup") {
@@ -44,10 +42,7 @@ export function AuthScreen() {
           throw error;
         }
 
-        console.log("ForgeAI signup successful:", {
-          userId: data.user?.id,
-          email: data.user?.email,
-        });
+        console.log("ForgeAI signup response:", data);
 
         setMessage(
           "Account created successfully. Check your email if confirmation is enabled.",
@@ -56,11 +51,10 @@ export function AuthScreen() {
         setMode("signin");
         setPassword("");
       } else {
-        const { data, error } =
-          await supabase.auth.signInWithPassword({
-            email: normalizedEmail,
-            password,
-          });
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
 
         if (error) {
           console.error("ForgeAI signin error:", error);
@@ -77,10 +71,49 @@ export function AuthScreen() {
 
       if (error instanceof Error) {
         setMessage(error.message);
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error
+      ) {
+        setMessage(String(error.message));
       } else {
-        setMessage("Authentication failed. Check the browser console.");
+        setMessage(
+          "Authentication failed. Check the browser console for details.",
+        );
       }
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setMessage("");
+    setBusy(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        console.error("ForgeAI Google sign-in error:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("ForgeAI Google authentication error:", error);
+
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage(
+          "Google sign-in failed. Check the browser console for details.",
+        );
+      }
+
       setBusy(false);
     }
   }
@@ -164,6 +197,19 @@ export function AuthScreen() {
           </button>
         </form>
 
+        <div className="auth-divider" aria-hidden="true">
+          <span>or</span>
+        </div>
+
+        <button
+          className="auth-google"
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={busy}
+        >
+          Continue with Google
+        </button>
+
         {message && (
           <p
             className="auth-message"
@@ -186,4 +232,3 @@ export function AuthScreen() {
     </main>
   );
 }
-
