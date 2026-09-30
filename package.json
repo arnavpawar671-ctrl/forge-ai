@@ -12,7 +12,7 @@
     "build:web": "pnpm --filter @forgeai/web build",
     "lint:web": "pnpm --filter @forgeai/web lint",
 
-    "dev:api": "python apps/api/app/main.py",
+    "dev:api": "cd apps/api && python -m app.main",
     "test:api": "python -m pytest apps/api/tests"
   },
 
