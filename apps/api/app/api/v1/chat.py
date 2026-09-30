@@ -135,7 +135,7 @@ async def generate_stream(
         touch_conversation(
             conversation_id=conversation_id,
             user_id=user_id,
-            title=_conversation_title(first_user_message),
+            title=_conversation_title(last_user_message),
         )
 
         yield (
