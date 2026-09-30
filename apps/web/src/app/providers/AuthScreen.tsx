@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+```tsx
+import React, { useState, type FormEvent } from "react";
 import { supabase } from "../../lib/supabase";
 
 export function AuthScreen() {
@@ -9,15 +10,26 @@ export function AuthScreen() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setMessage("");
     setBusy(true);
 
     try {
+      const normalizedEmail = email.trim();
+
+      if (!normalizedEmail) {
+        throw new Error("Please enter your email address.");
+      }
+
+      if (password.length < 6) {
+        throw new Error("Password must be at least 6 characters.");
+      }
+
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: normalizedEmail,
           password,
           options: {
             data: {
@@ -26,42 +38,82 @@ export function AuthScreen() {
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error("ForgeAI signup error:", error);
+          throw error;
+        }
+
+        console.log("ForgeAI signup response:", data);
 
         setMessage(
-          "Account created. Check your email if confirmation is enabled.",
+          "Account created successfully. Check your email if confirmation is enabled.",
         );
-        setMode("signin");
-      } else {
-        const { error } =
-          await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
 
-        if (error) throw error;
+        setMode("signin");
+        setPassword("");
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+
+        if (error) {
+          console.error("ForgeAI signin error:", error);
+          throw error;
+        }
+
+        console.log("ForgeAI signin successful:", {
+          userId: data.user?.id,
+          email: data.user?.email,
+        });
       }
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Authentication failed.",
-      );
+      console.error("ForgeAI authentication error:", error);
+
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error
+      ) {
+        setMessage(String(error.message));
+      } else {
+        setMessage(
+          "Authentication failed. Check the browser console for details.",
+        );
+      }
     } finally {
       setBusy(false);
     }
   }
 
+  function toggleMode() {
+    setMode((current) =>
+      current === "signin" ? "signup" : "signin",
+    );
+
+    setMessage("");
+    setPassword("");
+  }
+
   return (
     <main className="auth-screen">
       <section className="auth-card">
-        <img src="/logo.svg" alt="ForgeAI" className="auth-logo" />
+        <img
+          src="/logo.svg"
+          alt="ForgeAI"
+          className="auth-logo"
+        />
+
         <p className="auth-eyebrow">FORGEAI</p>
+
         <h1>
           {mode === "signin"
             ? "Welcome back."
             : "Create your ForgeAI account."}
         </h1>
+
         <p className="auth-subtitle">
           Your chats, preferences and engineering workspace
           will follow your account.
@@ -71,7 +123,9 @@ export function AuthScreen() {
           {mode === "signup" && (
             <input
               value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
+              onChange={(event) =>
+                setDisplayName(event.target.value)
+              }
               placeholder="Display name"
               autoComplete="name"
             />
@@ -79,7 +133,9 @@ export function AuthScreen() {
 
           <input
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
             placeholder="Email"
             type="email"
             autoComplete="email"
@@ -88,10 +144,16 @@ export function AuthScreen() {
 
           <input
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) =>
+              setPassword(event.target.value)
+            }
             placeholder="Password"
             type="password"
-            autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            autoComplete={
+              mode === "signin"
+                ? "current-password"
+                : "new-password"
+            }
             minLength={6}
             required
           />
@@ -105,17 +167,19 @@ export function AuthScreen() {
           </button>
         </form>
 
-        {message && <p className="auth-message">{message}</p>}
+        {message && (
+          <p
+            className="auth-message"
+            role="alert"
+          >
+            {message}
+          </p>
+        )}
 
         <button
           className="auth-switch"
           type="button"
-          onClick={() => {
-            setMode((current) =>
-              current === "signin" ? "signup" : "signin",
-            );
-            setMessage("");
-          }}
+          onClick={toggleMode}
         >
           {mode === "signin"
             ? "Need an account? Create one"
@@ -125,3 +189,4 @@ export function AuthScreen() {
     </main>
   );
 }
+```
