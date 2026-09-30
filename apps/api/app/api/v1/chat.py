@@ -48,12 +48,16 @@ async def generate_stream(
     request: ChatRequest,
     user_id: str,
 ) -> AsyncIterator[str]:
-    first_user_message = next(
-        (message.content.strip() for message in request.messages if message.role == "user"),
+    last_user_message = next(
+        (
+            message.content.strip()
+            for message in reversed(request.messages)
+            if message.role == "user"
+        ),
         "",
     )
 
-    if not first_user_message:
+    if not last_user_message:
         yield 'data: {"type":"error","message":"A user message is required."}\n\n'
         return
 
@@ -65,7 +69,7 @@ async def generate_stream(
         else:
             conversation = create_conversation(
                 user_id=user_id,
-                title=_conversation_title(first_user_message),
+                title=_conversation_title(last_user_message),
                 mode=request.mode,
                 personality=request.personality,
                 model=request.model,
@@ -88,7 +92,7 @@ async def generate_stream(
         save_message(
             conversation_id=conversation_id,
             role="user",
-            content=first_user_message,
+            content=last_user_message,
             model=request.model,
             mode=request.mode,
             personality=request.personality,
