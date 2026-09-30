@@ -1,3 +1,5 @@
+import { supabase } from "../../../lib/supabase";
+
 export type ChatRole = "user" | "assistant";
 
 export interface ChatMessage {
@@ -24,12 +26,21 @@ export async function streamChat({
   onError,
 }: StreamOptions): Promise<void> {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error("You must be signed in to use ForgeAI.");
+    }
+
     const response = await fetch(
       `${API_URL}/api/v1/chat`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           messages,
@@ -40,16 +51,19 @@ export async function streamChat({
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(errorText || "Chat request failed.");
+      throw new Error(
+        errorText || "Chat request failed.",
+      );
     }
 
     if (!response.body) {
-      throw new Error("Streaming is not supported by this response.");
+      throw new Error(
+        "Streaming is not supported by this response.",
+      );
     }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-
     let buffer = "";
 
     while (true) {
@@ -64,7 +78,6 @@ export async function streamChat({
       });
 
       const events = buffer.split("\n\n");
-
       buffer = events.pop() ?? "";
 
       for (const event of events) {
