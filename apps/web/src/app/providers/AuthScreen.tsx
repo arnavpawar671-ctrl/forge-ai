@@ -1,4 +1,3 @@
-```tsx
 import React, { useState, type FormEvent } from "react";
 import { supabase } from "../../lib/supabase";
 
@@ -88,6 +87,37 @@ export function AuthScreen() {
     }
   }
 
+  async function handleGoogleSignIn() {
+    setMessage("");
+    setBusy(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        console.error("ForgeAI Google sign-in error:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("ForgeAI Google authentication error:", error);
+
+      if (error instanceof Error) {
+        setMessage(error.message);
+      } else {
+        setMessage(
+          "Google sign-in failed. Check the browser console for details.",
+        );
+      }
+
+      setBusy(false);
+    }
+  }
+
   function toggleMode() {
     setMode((current) =>
       current === "signin" ? "signup" : "signin",
@@ -167,6 +197,19 @@ export function AuthScreen() {
           </button>
         </form>
 
+        <div className="auth-divider" aria-hidden="true">
+          <span>or</span>
+        </div>
+
+        <button
+          className="auth-google"
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={busy}
+        >
+          Continue with Google
+        </button>
+
         {message && (
           <p
             className="auth-message"
@@ -189,4 +232,3 @@ export function AuthScreen() {
     </main>
   );
 }
-```
