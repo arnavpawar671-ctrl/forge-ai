@@ -12,6 +12,7 @@
   },
 
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
