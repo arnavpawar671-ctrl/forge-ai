@@ -2,15 +2,29 @@ import { useState } from "react";
 import {
   streamChat,
   type ChatMessage,
+  type ConversationCreatedPayload,
 } from "../api/chat.api";
 
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
 
+  function replaceMessages(nextMessages: ChatMessage[]) {
+    setMessages(nextMessages);
+  }
+
+  function clearMessages() {
+    setMessages([]);
+  }
+
   async function sendMessage(
     content: string,
     mode: string,
+    conversationId: string | null,
+    onConversationCreated?: (
+      conversation: ConversationCreatedPayload,
+    ) => void,
+    onDone?: (conversationId?: string) => void,
   ) {
     const trimmed = content.trim();
 
@@ -41,12 +55,17 @@ export function useChat() {
     await streamChat({
       messages: nextMessages,
       mode,
+      conversationId,
+      onConversationCreated,
 
       onToken: (token) => {
         setMessages((current) => {
           const updated = [...current];
-
           const last = updated.length - 1;
+
+          if (last < 0) {
+            return current;
+          }
 
           updated[last] = {
             ...updated[last],
@@ -57,19 +76,28 @@ export function useChat() {
         });
       },
 
-      onDone: () => {
+      onDone: (id) => {
         setIsStreaming(false);
+        onDone?.(id);
       },
 
-      onError: (message) => {
+      onError: (errorMessage) => {
         setMessages((current) => {
           const updated = [...current];
-
           const last = updated.length - 1;
+
+          if (last < 0) {
+            return [
+              {
+                role: "assistant",
+                content: "⚠️ " + errorMessage,
+              },
+            ];
+          }
 
           updated[last] = {
             role: "assistant",
-            content: `⚠️ ${message}`,
+            content: "⚠️ " + errorMessage,
           };
 
           return updated;
@@ -84,5 +112,7 @@ export function useChat() {
     messages,
     isStreaming,
     sendMessage,
+    replaceMessages,
+    clearMessages,
   };
 }
