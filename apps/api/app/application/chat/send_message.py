@@ -3,12 +3,13 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass
 
+from app.application.chat.context_manager import build_chat_context
+from app.application.chat.prompt_engine import build_prompt
 from app.infrastructure.ai.base import (
     AIMessage,
     AIRequest,
     AIStreamChunk,
 )
-from app.infrastructure.ai.prompts.system import build_system_prompt
 from app.infrastructure.ai.router import ai_router
 
 
@@ -23,7 +24,6 @@ class SendMessageCommand:
     temperature: float = 0.2
     max_tokens: int = 4096
 
-    # These will be used by the memory/database layer.
     user_id: str | None = None
     conversation_id: str | None = None
 
@@ -46,11 +46,11 @@ class SendMessageService:
 
         API request
             ↓
-        SendMessageService
+        Context Manager
             ↓
         Prompt Engine
             ↓
-        AIRequest
+        AI Request
             ↓
         AI Model Router
             ↓
@@ -59,18 +59,17 @@ class SendMessageService:
         streamed AI chunks
     """
 
-    async def stream(
+    def _build_request(
         self,
         command: SendMessageCommand,
-    ) -> AsyncIterator[AIStreamChunk]:
-        """Stream ForgeAI's response."""
+        *,
+        stream: bool,
+    ) -> AIRequest:
+        context_messages = build_chat_context(command.messages)
 
-        system_prompt = build_system_prompt(
+        system_prompt = build_prompt(
             mode=command.mode,
             personality=command.personality,
-            memory=(),
-            context=(),
-            available_tools=(),
         )
 
         ai_messages = [
@@ -78,21 +77,32 @@ class SendMessageService:
                 role="system",
                 content=system_prompt,
             ),
-            *command.messages,
+            *context_messages,
         ]
 
-        request = AIRequest(
+        return AIRequest(
             messages=ai_messages,
             model=command.model or "",
             temperature=command.temperature,
             max_tokens=command.max_tokens,
             mode=command.mode,
             personality=command.personality,
-            stream=True,
+            stream=stream,
             metadata={
                 "user_id": command.user_id,
                 "conversation_id": command.conversation_id,
             },
+        )
+
+    async def stream(
+        self,
+        command: SendMessageCommand,
+    ) -> AsyncIterator[AIStreamChunk]:
+        """Stream ForgeAI's response."""
+
+        request = self._build_request(
+            command,
+            stream=True,
         )
 
         async for chunk in ai_router.stream(request):
@@ -109,34 +119,9 @@ class SendMessageService:
         summaries, and background jobs.
         """
 
-        system_prompt = build_system_prompt(
-            mode=command.mode,
-            personality=command.personality,
-            memory=(),
-            context=(),
-            available_tools=(),
-        )
-
-        ai_messages = [
-            AIMessage(
-                role="system",
-                content=system_prompt,
-            ),
-            *command.messages,
-        ]
-
-        request = AIRequest(
-            messages=ai_messages,
-            model=command.model or "",
-            temperature=command.temperature,
-            max_tokens=command.max_tokens,
-            mode=command.mode,
-            personality=command.personality,
+        request = self._build_request(
+            command,
             stream=False,
-            metadata={
-                "user_id": command.user_id,
-                "conversation_id": command.conversation_id,
-            },
         )
 
         response = await ai_router.generate(request)
