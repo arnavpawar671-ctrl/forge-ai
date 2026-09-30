@@ -7,11 +7,25 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface ConversationCreatedPayload {
+  id: string;
+  title: string;
+  mode: string;
+  personality: string;
+  model: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface StreamOptions {
   messages: ChatMessage[];
   mode: string;
+  conversationId?: string | null;
   onToken: (token: string) => void;
-  onDone: () => void;
+  onConversationCreated?: (
+    conversation: ConversationCreatedPayload,
+  ) => void;
+  onDone: (conversationId?: string) => void;
   onError: (message: string) => void;
 }
 
@@ -21,10 +35,14 @@ const API_URL =
 export async function streamChat({
   messages,
   mode,
+  conversationId,
   onToken,
+  onConversationCreated,
   onDone,
   onError,
 }: StreamOptions): Promise<void> {
+  let completed = false;
+
   try {
     const {
       data: { session },
@@ -35,16 +53,17 @@ export async function streamChat({
     }
 
     const response = await fetch(
-      `${API_URL}/api/v1/chat`,
+      API_URL + "/api/v1/chat",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: "Bearer " + session.access_token,
         },
         body: JSON.stringify({
           messages,
           mode,
+          conversation_id: conversationId ?? null,
         }),
       },
     );
@@ -97,12 +116,17 @@ export async function streamChat({
 
         const payload = JSON.parse(json);
 
+        if (payload.type === "conversation") {
+          onConversationCreated?.(payload.conversation);
+        }
+
         if (payload.type === "token") {
           onToken(payload.content);
         }
 
         if (payload.type === "done") {
-          onDone();
+          completed = true;
+          onDone(payload.conversation_id);
         }
 
         if (payload.type === "error") {
@@ -111,7 +135,9 @@ export async function streamChat({
       }
     }
 
-    onDone();
+    if (!completed) {
+      onDone(conversationId ?? undefined);
+    }
   } catch (error) {
     onError(
       error instanceof Error
