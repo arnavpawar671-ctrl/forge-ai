@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from app.application.chat.context_manager import build_chat_context
 from app.application.chat.prompt_engine import build_prompt
+from app.application.chat.response_policy import choose_response_policy
 from app.infrastructure.ai.base import (
     AIMessage,
     AIRequest,
@@ -67,9 +68,27 @@ class SendMessageService:
     ) -> AIRequest:
         context_messages = build_chat_context(command.messages)
 
+        last_user_message = next(
+            (
+                message.content
+                for message in reversed(command.messages)
+                if message.role == "user"
+            ),
+            "",
+        )
+        policy = choose_response_policy(
+            last_user_message,
+            mode=command.mode,
+        )
+
         system_prompt = build_prompt(
             mode=command.mode,
             personality=command.personality,
+        )
+        system_prompt = (
+            f"{system_prompt}\n\n"
+            f"RESPONSE POLICY ({policy.name.upper()}):\n"
+            f"{policy.instructions}"
         )
 
         ai_messages = [
@@ -84,7 +103,7 @@ class SendMessageService:
             messages=ai_messages,
             model=command.model or "",
             temperature=command.temperature,
-            max_tokens=command.max_tokens,
+            max_tokens=min(command.max_tokens, policy.max_tokens),
             mode=command.mode,
             personality=command.personality,
             stream=stream,
