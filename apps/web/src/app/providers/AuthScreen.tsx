@@ -1,4 +1,3 @@
-```tsx
 import React, { useState, type FormEvent } from "react";
 import { supabase } from "../../lib/supabase";
 
@@ -20,11 +19,13 @@ export function AuthScreen() {
       const normalizedEmail = email.trim();
 
       if (!normalizedEmail) {
-        throw new Error("Please enter your email address.");
+        setMessage("Please enter your email address.");
+        return;
       }
 
       if (password.length < 6) {
-        throw new Error("Password must be at least 6 characters.");
+        setMessage("Password must be at least 6 characters.");
+        return;
       }
 
       if (mode === "signup") {
@@ -43,7 +44,10 @@ export function AuthScreen() {
           throw error;
         }
 
-        console.log("ForgeAI signup response:", data);
+        console.log("ForgeAI signup successful:", {
+          userId: data.user?.id,
+          email: data.user?.email,
+        });
 
         setMessage(
           "Account created successfully. Check your email if confirmation is enabled.",
@@ -52,10 +56,11 @@ export function AuthScreen() {
         setMode("signin");
         setPassword("");
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
+        const { data, error } =
+          await supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password,
+          });
 
         if (error) {
           console.error("ForgeAI signin error:", error);
@@ -72,16 +77,8 @@ export function AuthScreen() {
 
       if (error instanceof Error) {
         setMessage(error.message);
-      } else if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error
-      ) {
-        setMessage(String(error.message));
       } else {
-        setMessage(
-          "Authentication failed. Check the browser console for details.",
-        );
+        setMessage("Authentication failed. Check the browser console.");
       }
     } finally {
       setBusy(false);
@@ -189,4 +186,4 @@ export function AuthScreen() {
     </main>
   );
 }
-```
+
