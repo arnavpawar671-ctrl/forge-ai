@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -10,7 +12,11 @@ router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
 class CreateConversationRequest(BaseModel):
-    title: str = Field(default="New conversation", min_length=1, max_length=200)
+    title: str = Field(
+        default="New conversation",
+        min_length=1,
+        max_length=200,
+    )
     mode: str = "explain"
     personality: str = "senior_engineer"
     model: str | None = None
@@ -20,13 +26,17 @@ def _user_id(current_user) -> str:
     return str(current_user.id)
 
 
-def _get_owned_conversation(conversation_id: str, user_id: str) -> dict:
+def _get_owned_conversation(
+    conversation_id: str,
+    user_id: str,
+) -> dict:
     response = (
         database.table("conversations")
-        .select("id, title, mode, personality, model, created_at, updated_at")
+        .select(
+            "id, title, mode, personality, model, created_at, updated_at"
+        )
         .eq("id", conversation_id)
         .eq("user_id", user_id)
-        .maybe_single()
         .execute()
     )
 
@@ -36,7 +46,7 @@ def _get_owned_conversation(conversation_id: str, user_id: str) -> dict:
             detail="Conversation not found.",
         )
 
-    return response.data
+    return response.data[0]
 
 
 def create_conversation(
@@ -58,11 +68,19 @@ def create_conversation(
                 "model": model,
             }
         )
-        .select("id, title, mode, personality, model, created_at, updated_at")
-        .single()
+        .select(
+            "id, title, mode, personality, model, created_at, updated_at"
+        )
         .execute()
     )
-    return response.data
+
+    if not response.data:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create conversation.",
+        )
+
+    return response.data[0]
 
 
 def save_message(
@@ -86,11 +104,20 @@ def save_message(
                 "personality": personality,
             }
         )
-        .select("id, conversation_id, role, content, model, mode, personality, created_at")
-        .single()
+        .select(
+            "id, conversation_id, role, content, "
+            "model, mode, personality, created_at"
+        )
         .execute()
     )
-    return response.data
+
+    if not response.data:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save message.",
+        )
+
+    return response.data[0]
 
 
 def touch_conversation(
@@ -99,36 +126,41 @@ def touch_conversation(
     user_id: str,
     title: str | None = None,
 ) -> None:
-    payload = {"updated_at": "now()"}
+    payload = {
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
     if title:
         payload["title"] = title[:200]
 
-    # PostgREST does not evaluate SQL expressions in JSON update values.
-    # Use a concrete UTC timestamp instead.
-    from datetime import datetime, timezone
-
-    payload["updated_at"] = datetime.now(timezone.utc).isoformat()
-
-    query = (
+    (
         database.table("conversations")
         .update(payload)
         .eq("id", conversation_id)
         .eq("user_id", user_id)
+        .execute()
     )
-    query.execute()
 
 
 @router.get("")
-async def list_conversations(current_user=Depends(get_current_user)):
+async def list_conversations(
+    current_user=Depends(get_current_user),
+):
     response = (
         database.table("conversations")
-        .select("id, title, mode, personality, model, created_at, updated_at")
+        .select(
+            "id, title, mode, personality, model, "
+            "created_at, updated_at"
+        )
         .eq("user_id", _user_id(current_user))
         .eq("is_archived", False)
         .order("updated_at", desc=True)
         .execute()
     )
-    return {"conversations": response.data or []}
+
+    return {
+        "conversations": response.data or [],
+    }
 
 
 @router.post("")
@@ -143,7 +175,10 @@ async def create_conversation_endpoint(
         personality=request.personality,
         model=request.model,
     )
-    return {"conversation": conversation}
+
+    return {
+        "conversation": conversation,
+    }
 
 
 @router.get("/{conversation_id}/messages")
@@ -152,14 +187,23 @@ async def list_messages(
     current_user=Depends(get_current_user),
 ):
     user_id = _user_id(current_user)
-    _get_owned_conversation(conversation_id, user_id)
+
+    _get_owned_conversation(
+        conversation_id,
+        user_id,
+    )
 
     response = (
         database.table("messages")
-        .select("id, conversation_id, role, content, model, mode, personality, created_at")
+        .select(
+            "id, conversation_id, role, content, "
+            "model, mode, personality, created_at"
+        )
         .eq("conversation_id", conversation_id)
         .order("created_at", desc=False)
         .execute()
     )
 
-    return {"messages": response.data or []}
+    return {
+        "messages": response.data or [],
+    }

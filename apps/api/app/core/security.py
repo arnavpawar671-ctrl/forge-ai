@@ -1,8 +1,18 @@
 from __future__ import annotations
 
 from fastapi import Header, HTTPException, status
+from supabase import create_client
 
-from app.infrastructure.database.client import database
+from app.core.config import settings
+
+
+def _get_auth_user(token: str):
+    auth_client = create_client(
+        settings.supabase_url,
+        settings.supabase_secret_key,
+    )
+
+    return auth_client.auth.get_user(token)
 
 
 async def get_current_user(
@@ -25,7 +35,7 @@ async def get_current_user(
         )
 
     try:
-        response = database.client.auth.get_user(token)
+        response = _get_auth_user(token)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
