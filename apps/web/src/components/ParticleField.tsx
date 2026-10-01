@@ -14,16 +14,23 @@ type ParticleFieldProps = {
   sizeRandomness?: number;
   alphaParticles?: boolean;
   cameraDistance?: number;
+  pixelRatio?: number;
 };
 
 type RGB = [number, number, number];
 
+const DEFAULT_COLORS = ["#FF981F", "#FFAA3D", "#D96F0B"];
+
 function hexToRgb(hex: string): RGB {
-  const normalized = hex.replace("#", "");
-  const value = normalized.length === 3
-    ? normalized.split("").map((char) => char + char).join("")
-    : normalized;
-  const number = Number.parseInt(value, 16);
+  const normalized = hex.replace(/^#/, "");
+  const value =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : normalized;
+  const number = Number.parseInt(value.slice(0, 6), 16);
 
   return [
     ((number >> 16) & 255) / 255,
@@ -32,33 +39,108 @@ function hexToRgb(hex: string): RGB {
   ];
 }
 
+const vertexShader = `
+  attribute vec4 aRandom;
+  attribute vec3 aColor;
+
+  uniform float uTime;
+  uniform float uSpread;
+  uniform float uBaseSize;
+  uniform float uSizeRandomness;
+
+  varying vec4 vRandom;
+  varying vec3 vColor;
+
+  void main() {
+    vRandom = aRandom;
+    vColor = aColor;
+
+    vec3 pos = position * uSpread;
+    pos.z *= 10.0;
+
+    vec4 modelPosition = modelMatrix * vec4(pos, 1.0);
+    float t = uTime;
+
+    modelPosition.x += sin(t * aRandom.z + 6.28 * aRandom.w)
+      * mix(0.1, 1.5, aRandom.x);
+    modelPosition.y += sin(t * aRandom.y + 6.28 * aRandom.x)
+      * mix(0.1, 1.5, aRandom.w);
+    modelPosition.z += sin(t * aRandom.w + 6.28 * aRandom.y)
+      * mix(0.1, 1.5, aRandom.z);
+
+    vec4 viewPosition = viewMatrix * modelPosition;
+
+    if (uSizeRandomness == 0.0) {
+      gl_PointSize = uBaseSize;
+    } else {
+      gl_PointSize =
+        (uBaseSize * (1.0 + uSizeRandomness * (aRandom.x - 0.5)))
+        / max(1.0, length(viewPosition.xyz));
+    }
+
+    gl_Position = projectionMatrix * viewPosition;
+  }
+`;
+
+const fragmentShader = `
+  precision highp float;
+
+  uniform float uTime;
+  uniform float uAlphaParticles;
+
+  varying vec4 vRandom;
+  varying vec3 vColor;
+
+  void main() {
+    vec2 uv = gl_PointCoord;
+    float distanceFromCenter = length(uv - vec2(0.5));
+
+    if (uAlphaParticles < 0.5) {
+      if (distanceFromCenter > 0.5) discard;
+
+      gl_FragColor = vec4(
+        vColor + 0.12 * sin(uv.yxx + uTime + vRandom.y * 6.28),
+        1.0
+      );
+    } else {
+      float alpha = smoothstep(0.5, 0.38, distanceFromCenter) * 0.72;
+
+      gl_FragColor = vec4(
+        vColor + 0.12 * sin(uv.yxx + uTime + vRandom.y * 6.28),
+        alpha
+      );
+    }
+  }
+`;
+
 export function ParticleField({
   className = "",
-  particleCount = 180,
-  particleColors = ["#FF981F"],
+  particleCount = 200,
+  particleColors = DEFAULT_COLORS,
   particleSpread = 10,
   speed = 0.1,
   moveParticlesOnHover = true,
-  particleHoverFactor = 1.7,
+  particleHoverFactor = 1.15,
   disableRotation = false,
-  particleBaseSize = 95,
-  sizeRandomness = 1.1,
+  particleBaseSize = 85,
+  sizeRandomness = 1,
   alphaParticles = true,
   cameraDistance = 20,
+  pixelRatio = 1.5,
 }: ParticleFieldProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reducedMotion.matches) return;
 
     const renderer = new Renderer({
+      dpr: Math.min(window.devicePixelRatio || 1, pixelRatio),
+      depth: false,
       alpha: true,
-      antialias: true,
-      dpr: Math.min(window.devicePixelRatio || 1, 1.5),
     });
 
     const gl = renderer.gl;
@@ -67,188 +149,137 @@ export function ParticleField({
     gl.canvas.style.height = "100%";
     gl.canvas.style.display = "block";
     gl.canvas.style.pointerEvents = "none";
-    root.appendChild(gl.canvas);
+    container.appendChild(gl.canvas);
 
-    const camera = new Camera(gl, { fov: 35 });
-    camera.position.z = cameraDistance;
+    const camera = new Camera(gl, { fov: 15 });
+    camera.position.set(0, 0, cameraDistance);
 
-    const positions = new Float32Array(particleCount * 3);
-    const randoms = new Float32Array(particleCount);
-    const colors = new Float32Array(particleCount * 3);
+    const resize = () => {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (!width || !height) return;
 
-    for (let i = 0; i < particleCount; i += 1) {
-      const index = i * 3;
+      renderer.setSize(width, height);
+      camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
+    };
 
-      positions[index] = (Math.random() - 0.5) * particleSpread;
-      positions[index + 1] = (Math.random() - 0.5) * particleSpread;
-      positions[index + 2] = (Math.random() - 0.5) * particleSpread;
-      randoms[i] = Math.random();
+    resize();
+    window.addEventListener("resize", resize);
 
-      const color = hexToRgb(
-        particleColors[Math.floor(Math.random() * particleColors.length)] ?? "#FF981F",
+    const count = Math.max(1, particleCount);
+    const positions = new Float32Array(count * 3);
+    const randoms = new Float32Array(count * 4);
+    const colors = new Float32Array(count * 3);
+    const palette = particleColors.length > 0 ? particleColors : DEFAULT_COLORS;
+
+    for (let i = 0; i < count; i += 1) {
+      let x = 0;
+      let y = 0;
+      let z = 0;
+      let lengthSquared = 2;
+
+      while (lengthSquared > 1 || lengthSquared === 0) {
+        x = Math.random() * 2 - 1;
+        y = Math.random() * 2 - 1;
+        z = Math.random() * 2 - 1;
+        lengthSquared = x * x + y * y + z * z;
+      }
+
+      const radius = Math.cbrt(Math.random());
+      positions.set([x * radius, y * radius, z * radius], i * 3);
+
+      randoms.set(
+        [Math.random(), Math.random(), Math.random(), Math.random()],
+        i * 4,
       );
 
-      colors[index] = color[0];
-      colors[index + 1] = color[1];
-      colors[index + 2] = color[2];
+      const color = hexToRgb(
+        palette[Math.floor(Math.random() * palette.length)] ?? DEFAULT_COLORS[0],
+      );
+      colors.set(color, i * 3);
     }
 
     const geometry = new Geometry(gl, {
       position: { size: 3, data: positions },
-      aRandom: { size: 1, data: randoms },
+      aRandom: { size: 4, data: randoms },
       aColor: { size: 3, data: colors },
     });
 
     const program = new Program(gl, {
-      transparent: true,
-      depthTest: false,
+      vertex: vertexShader,
+      fragment: fragmentShader,
       uniforms: {
         uTime: { value: 0 },
-        uSpeed: { value: speed },
-        uSize: { value: particleBaseSize },
-        uHover: { value: [-10, -10] },
-        uHoverStrength: { value: particleHoverFactor },
-        uHoverEnabled: { value: moveParticlesOnHover ? 1 : 0 },
-        uDisableRotation: { value: disableRotation ? 1 : 0 },
+        uSpread: { value: particleSpread },
+        uBaseSize: { value: particleBaseSize * Math.min(window.devicePixelRatio || 1, pixelRatio) },
+        uSizeRandomness: { value: sizeRandomness },
         uAlphaParticles: { value: alphaParticles ? 1 : 0 },
-        uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 1.5) },
       },
-      vertex: `
-        attribute float aRandom;
-        attribute vec3 aColor;
-
-        uniform float uTime;
-        uniform float uSpeed;
-        uniform float uSize;
-        uniform vec2 uHover;
-        uniform float uHoverStrength;
-        uniform float uHoverEnabled;
-        uniform float uDisableRotation;
-        uniform float uPixelRatio;
-
-        varying vec3 vColor;
-        varying float vAlpha;
-
-        void main() {
-          vec3 p = position;
-          float t = uTime * uSpeed;
-
-          p.x += sin(t * 0.7 + aRandom * 18.0) * 0.12;
-          p.y += cos(t * 0.55 + aRandom * 15.0) * 0.10;
-          p.z += sin(t * 0.45 + aRandom * 13.0) * 0.08;
-
-          vec2 delta = p.xy - uHover;
-          float distanceToCursor = length(delta);
-          float influence = smoothstep(2.2, 0.0, distanceToCursor) * uHoverEnabled;
-          vec2 direction = distanceToCursor > 0.001 ? normalize(delta) : vec2(0.0);
-
-          p.xy += direction * influence * 0.75 * uHoverStrength;
-
-          if (uDisableRotation < 0.5) {
-            float rotation = t * 0.12;
-            float c = cos(rotation);
-            float s = sin(rotation);
-            p.xy = mat2(c, -s, s, c) * p.xy;
-          }
-
-          vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
-          gl_Position = projectionMatrix * mvPosition;
-
-          float depthScale = 1.0 / max(0.5, -mvPosition.z);
-          gl_PointSize = uSize * (0.55 + aRandom * 1.1) * depthScale * uPixelRatio;
-
-          vColor = aColor;
-          vAlpha = 0.42 + aRandom * 0.58;
-        }
-      `,
-      fragment: `
-        precision highp float;
-
-        varying vec3 vColor;
-        varying float vAlpha;
-
-        void main() {
-          vec2 uv = gl_PointCoord - 0.5;
-          float distanceToCenter = length(uv);
-          float soft = 1.0 - smoothstep(0.05, 0.5, distanceToCenter);
-
-          if (soft <= 0.01) discard;
-
-          float glow = pow(soft, 2.2);
-          gl_FragColor = vec4(vColor, glow * vAlpha);
-        }
-      `,
+      transparent: true,
+      depthTest: false,
     });
 
-    const mesh = new Mesh(gl, {
+    const particles = new Mesh(gl, {
       mode: gl.POINTS,
       geometry,
       program,
     });
 
-    const mouse = { x: -10, y: -10, active: false };
-
-    const resize = () => {
-      const rect = root.getBoundingClientRect();
-      renderer.setSize(rect.width, rect.height);
+    const mouse = { x: 0, y: 0 };
+    const handleMouseMove = (event: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
     };
 
-    const moveMouse = (event: MouseEvent) => {
-      const rect = root.getBoundingClientRect();
+    if (moveParticlesOnHover) {
+      container.addEventListener("mousemove", handleMouseMove);
+    }
 
-      if (
-        event.clientX < rect.left ||
-        event.clientX > rect.right ||
-        event.clientY < rect.top ||
-        event.clientY > rect.bottom
-      ) {
-        mouse.active = false;
-        return;
+    let animationFrame = 0;
+    let lastTime = performance.now();
+    let elapsed = 0;
+
+    const update = (time: number) => {
+      animationFrame = requestAnimationFrame(update);
+
+      const delta = time - lastTime;
+      lastTime = time;
+      elapsed += delta * speed;
+
+      program.uniforms.uTime.value = elapsed * 0.001;
+
+      if (moveParticlesOnHover) {
+        particles.position.x = -mouse.x * particleHoverFactor;
+        particles.position.y = -mouse.y * particleHoverFactor;
+      } else {
+        particles.position.x = 0;
+        particles.position.y = 0;
       }
 
-      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = 1 - ((event.clientY - rect.top) / rect.height) * 2;
+      if (!disableRotation) {
+        particles.rotation.x = Math.sin(elapsed * 0.0002) * 0.1;
+        particles.rotation.y = Math.cos(elapsed * 0.0005) * 0.15;
+        particles.rotation.z += 0.01 * speed;
+      }
 
-      mouse.x = x * (particleSpread * 0.5);
-      mouse.y = y * (particleSpread * 0.5);
-      mouse.active = true;
+      renderer.render({ scene: particles, camera });
     };
 
-    const leave = () => {
-      mouse.active = false;
-    };
-
-    let frame = 0;
-
-    const render = (time: number) => {
-      program.uniforms.uTime.value = time * 0.001;
-      program.uniforms.uHover.value = mouse.active
-        ? [mouse.x, mouse.y]
-        : [-10, -10];
-
-      renderer.render({
-        scene: mesh,
-        camera,
-      });
-
-      frame = requestAnimationFrame(render);
-    };
-
-    resize();
-    frame = requestAnimationFrame(render);
-
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(root);
-
-    window.addEventListener("mousemove", moveMouse);
-    window.addEventListener("mouseleave", leave);
+    animationFrame = requestAnimationFrame(update);
 
     return () => {
-      cancelAnimationFrame(frame);
-      resizeObserver.disconnect();
-      window.removeEventListener("mousemove", moveMouse);
-      window.removeEventListener("mouseleave", leave);
-      gl.canvas.remove();
+      cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", resize);
+
+      if (moveParticlesOnHover) {
+        container.removeEventListener("mousemove", handleMouseMove);
+      }
+
+      if (container.contains(gl.canvas)) {
+        container.removeChild(gl.canvas);
+      }
+
       renderer.gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, [
@@ -263,12 +294,13 @@ export function ParticleField({
     sizeRandomness,
     alphaParticles,
     cameraDistance,
+    pixelRatio,
   ]);
 
   return (
     <div
-      ref={rootRef}
-      className={`particle-field \${className}`}
+      ref={containerRef}
+      className={`particle-field ${className}`}
       aria-hidden="true"
     />
   );
