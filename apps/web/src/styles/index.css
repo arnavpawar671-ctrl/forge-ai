@@ -1264,3 +1264,85 @@ button:disabled {
 .composer-expanded textarea {
   min-height: 120px;
 }
+
+
+/* Developer code blocks */
+.message-content {
+  white-space: normal;
+}
+
+.code-block {
+  margin: 14px 0;
+  overflow: hidden;
+  border: 1px solid #292d32;
+  border-radius: 12px;
+  background: #0b0e11;
+}
+
+.code-block-header {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 9px 0 12px;
+  border-bottom: 1px solid #252a30;
+  background: #101317;
+}
+
+.code-language {
+  color: #8d9299;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.code-copy-button {
+  height: 23px;
+  padding: 0 8px;
+  border: 1px solid #292d32;
+  border-radius: 6px;
+  background: #15181c;
+  color: #7f858c;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7px;
+}
+
+.code-copy-button:hover {
+  border-color: #ff981f;
+  color: #ff981f;
+}
+
+.code-block pre {
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+  padding: 14px 15px;
+  color: #d9dcdf;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+.code-block code {
+  font: inherit;
+}
+
+.inline-code {
+  padding: 2px 5px;
+  border: 1px solid #292d32;
+  border-radius: 5px;
+  background: #0d1013;
+  color: #ffb35c;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9em;
+}
+
+@media (max-width: 720px) {
+  .code-block pre {
+    font-size: 11px;
+    padding: 12px;
+  }
+}
