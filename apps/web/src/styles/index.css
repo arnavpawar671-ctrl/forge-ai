@@ -612,8 +612,8 @@ button:disabled {
 
 .composer-area {
   flex-shrink: 0;
-  padding: 12px max(6%, 30px) 15px;
-  border-top: 1px solid #252a30;
+  padding: 18px max(6%, 30px) 15px;
+  border-top: 1px solid #292d32;
   background: #090b0d;
 }
 
