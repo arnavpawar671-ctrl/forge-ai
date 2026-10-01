@@ -19,16 +19,13 @@ type ParticleFieldProps = {
 
 type RGB = [number, number, number];
 
-const DEFAULT_COLORS = ["#FF981F", "#FFAA3D", "#D96F0B"];
+const DEFAULT_COLORS = ["#C084FC", "#A78BFA", "#E9D5FF", "#8B5CF6", "#DDD6FE"];
 
 function hexToRgb(hex: string): RGB {
   const normalized = hex.replace(/^#/, "");
   const value =
     normalized.length === 3
-      ? normalized
-          .split("")
-          .map((char) => char + char)
-          .join("")
+      ? normalized.split("").map((char) => char + char).join("")
       : normalized;
   const number = Number.parseInt(value.slice(0, 6), 16);
 
@@ -56,27 +53,26 @@ const vertexShader = `
     vColor = aColor;
 
     vec3 pos = position * uSpread;
-    pos.z *= 10.0;
+    pos.z *= 7.0;
 
     vec4 modelPosition = modelMatrix * vec4(pos, 1.0);
     float t = uTime;
 
     modelPosition.x += sin(t * aRandom.z + 6.28 * aRandom.w)
-      * mix(0.1, 1.5, aRandom.x);
+      * mix(0.12, 1.9, aRandom.x);
     modelPosition.y += sin(t * aRandom.y + 6.28 * aRandom.x)
-      * mix(0.1, 1.5, aRandom.w);
+      * mix(0.12, 1.9, aRandom.w);
     modelPosition.z += sin(t * aRandom.w + 6.28 * aRandom.y)
-      * mix(0.1, 1.5, aRandom.z);
+      * mix(0.12, 1.4, aRandom.z);
 
     vec4 viewPosition = viewMatrix * modelPosition;
 
-    if (uSizeRandomness == 0.0) {
-      gl_PointSize = uBaseSize;
-    } else {
-      gl_PointSize =
-        (uBaseSize * (1.0 + uSizeRandomness * (aRandom.x - 0.5)))
-        / max(1.0, length(viewPosition.xyz));
-    }
+    float depthScale = clamp(18.0 / max(4.0, -viewPosition.z), 0.65, 2.8);
+    gl_PointSize = max(
+      1.8,
+      uBaseSize * depthScale *
+      (1.0 + uSizeRandomness * (aRandom.x - 0.5))
+    );
 
     gl_Position = projectionMatrix * viewPosition;
   }
@@ -92,38 +88,31 @@ const fragmentShader = `
   varying vec3 vColor;
 
   void main() {
-    vec2 uv = gl_PointCoord;
-    float distanceFromCenter = length(uv - vec2(0.5));
+    float distanceFromCenter = length(gl_PointCoord - vec2(0.5));
 
-    if (uAlphaParticles < 0.5) {
-      if (distanceFromCenter > 0.5) discard;
+    if (distanceFromCenter > 0.5) discard;
 
-      gl_FragColor = vec4(
-        vColor + 0.12 * sin(uv.yxx + uTime + vRandom.y * 6.28),
-        1.0
-      );
-    } else {
-      float alpha = smoothstep(0.5, 0.38, distanceFromCenter) * 0.72;
+    float core = smoothstep(0.48, 0.04, distanceFromCenter);
+    float glow = smoothstep(0.5, 0.0, distanceFromCenter);
 
-      gl_FragColor = vec4(
-        vColor + 0.12 * sin(uv.yxx + uTime + vRandom.y * 6.28),
-        alpha
-      );
-    }
+    vec3 shimmer = vColor + 0.08 * sin(gl_PointCoord.yxx + uTime + vRandom.y * 6.28);
+    float alpha = mix(0.72, 1.0, core) * (uAlphaParticles > 0.5 ? 0.9 : 1.0);
+
+    gl_FragColor = vec4(shimmer, alpha * glow);
   }
 `;
 
 export function ParticleField({
   className = "",
-  particleCount = 200,
+  particleCount = 900,
   particleColors = DEFAULT_COLORS,
-  particleSpread = 10,
-  speed = 0.1,
+  particleSpread = 12,
+  speed = 0.16,
   moveParticlesOnHover = true,
-  particleHoverFactor = 1.15,
+  particleHoverFactor = 1.1,
   disableRotation = false,
-  particleBaseSize = 85,
-  sizeRandomness = 1,
+  particleBaseSize = 5.5,
+  sizeRandomness = 0.8,
   alphaParticles = true,
   cameraDistance = 20,
   pixelRatio = 1.5,
@@ -148,10 +137,12 @@ export function ParticleField({
     gl.canvas.style.width = "100%";
     gl.canvas.style.height = "100%";
     gl.canvas.style.display = "block";
+    gl.canvas.style.position = "absolute";
+    gl.canvas.style.inset = "0";
     gl.canvas.style.pointerEvents = "none";
     container.appendChild(gl.canvas);
 
-    const camera = new Camera(gl, { fov: 15 });
+    const camera = new Camera(gl, { fov: 18 });
     camera.position.set(0, 0, cameraDistance);
 
     const resize = () => {
@@ -160,7 +151,7 @@ export function ParticleField({
       if (!width || !height) return;
 
       renderer.setSize(width, height);
-      camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
+      camera.perspective({ aspect: width / height });
     };
 
     resize();
@@ -187,11 +178,7 @@ export function ParticleField({
 
       const radius = Math.cbrt(Math.random());
       positions.set([x * radius, y * radius, z * radius], i * 3);
-
-      randoms.set(
-        [Math.random(), Math.random(), Math.random(), Math.random()],
-        i * 4,
-      );
+      randoms.set([Math.random(), Math.random(), Math.random(), Math.random()], i * 4);
 
       const color = hexToRgb(
         palette[Math.floor(Math.random() * palette.length)] ?? DEFAULT_COLORS[0],
@@ -217,6 +204,7 @@ export function ParticleField({
       },
       transparent: true,
       depthTest: false,
+      depthWrite: false,
     });
 
     const particles = new Mesh(gl, {
@@ -228,6 +216,7 @@ export function ParticleField({
     const mouse = { x: 0, y: 0 };
     const handleMouseMove = (event: MouseEvent) => {
       const rect = container.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
     };
@@ -258,9 +247,9 @@ export function ParticleField({
       }
 
       if (!disableRotation) {
-        particles.rotation.x = Math.sin(elapsed * 0.0002) * 0.1;
-        particles.rotation.y = Math.cos(elapsed * 0.0005) * 0.15;
-        particles.rotation.z += 0.01 * speed;
+        particles.rotation.x = Math.sin(elapsed * 0.0002) * 0.08;
+        particles.rotation.y = Math.cos(elapsed * 0.0005) * 0.12;
+        particles.rotation.z += 0.004 * speed;
       }
 
       renderer.render({ scene: particles, camera });
