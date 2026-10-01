@@ -509,11 +509,6 @@ function App() {
           </div>
         </header>
 
-        {sidebarHidden && (
-          <button className="sidebar-show-button" onClick={revealSidebar} title="Show sidebar">
-            Show sidebar
-          </button>
-        )}
 
         {showSettings ? (
           <section className="settings-panel">
