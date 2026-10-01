@@ -67,6 +67,40 @@ function modeLabel(mode: Mode) {
   return mode.toUpperCase() + " MODE";
 }
 
+function renderMessageContent(content: string, onCopyCode: (code: string, id: string) => void, copiedCode: string | null) {
+  const parts = content.split(/(```[^\n]*\n[\s\S]*?```)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("```") && part.endsWith("```")) {
+      const lines = part.slice(3, -3).replace(/^\r?\n/, "").split(/\r?\n/);
+      const language = lines.shift()?.trim() || "code";
+      const code = lines.join("\n").replace(/\n$/, "");
+      const codeId = index + "-" + code.slice(0, 40);
+      return (
+        <div className="code-block" key={index}>
+          <div className="code-block-header">
+            <span className="code-language">{language}</span>
+            <button className="code-copy-button" onClick={() => onCopyCode(code, codeId)}>
+              {copiedCode === codeId ? "Copied" : "Copy"}
+            </button>
+          </div>
+          <pre><code>{code}</code></pre>
+        </div>
+      );
+    }
+    const chunks = part.split(/(`[^`]+`)/g);
+    return (
+      <React.Fragment key={index}>
+        {chunks.map((chunk, chunkIndex) =>
+          chunk.startsWith("`") && chunk.endsWith("`")
+            ? <code className="inline-code" key={chunkIndex}>{chunk.slice(1, -1)}</code>
+            : <React.Fragment key={chunkIndex}>{chunk}</React.Fragment>
+        )}
+      </React.Fragment>
+    );
+  });
+}
+
 function App() {
   const { user, signOut } = useAuth();
   const {
@@ -91,6 +125,7 @@ function App() {
   const [autoHideSidebar, setAutoHideSidebar] = useState(() => localStorage.getItem("forgeai-sidebar-autohide") === "true");
   const [composerExpanded, setComposerExpanded] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const sidebarTimerRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -249,6 +284,16 @@ function App() {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       void handleSend();
+    }
+  };
+
+  const handleCopyCode = async (code: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(id);
+      window.setTimeout(() => setCopiedCode(null), 1400);
+    } catch {
+      setCopiedCode(null);
     }
   };
 
@@ -534,12 +579,11 @@ function App() {
                           : "message-content"
                       }
                     >
-                      {item.content ||
-                        (isStreaming && isLastMessage ? (
-                          <span className="thinking">
-                            ForgeAI is thinking…
-                          </span>
-                        ) : null)}
+                      {item.content
+                        ? renderMessageContent(item.content, handleCopyCode, copiedCode)
+                        : isStreaming && isLastMessage
+                          ? <span className="thinking">ForgeAI is thinking…</span>
+                          : null}
                     </div>
                     {item.content && (
                       <div className="message-actions">
