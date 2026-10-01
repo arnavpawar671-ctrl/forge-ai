@@ -89,6 +89,8 @@ function App() {
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [sidebarHidden, setSidebarHidden] = useState(false);
   const [autoHideSidebar, setAutoHideSidebar] = useState(() => localStorage.getItem("forgeai-sidebar-autohide") === "true");
+  const [composerExpanded, setComposerExpanded] = useState(false);
+  const [copiedMessage, setCopiedMessage] = useState<number | null>(null);
   const sidebarTimerRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -248,6 +250,27 @@ function App() {
       event.preventDefault();
       void handleSend();
     }
+  };
+
+  const handleCopyMessage = async (content: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessage(index);
+      window.setTimeout(() => setCopiedMessage(null), 1400);
+    } catch {
+      setCopiedMessage(null);
+    }
+  };
+
+  const handleEditMessage = (content: string) => {
+    setMessage(content);
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      textarea.focus();
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 220) + "px";
+    });
   };
 
   const handleNewChat = () => {
@@ -503,19 +526,40 @@ function App() {
                       {isUser ? "YOU" : "FORGEAI"}
                     </span>
                   </div>
-                  <div
-                    className={
-                      isUser
-                        ? "message-content user-content"
-                        : "message-content"
-                    }
-                  >
-                    {item.content ||
-                      (isStreaming && isLastMessage ? (
-                        <span className="thinking">
-                          ForgeAI is thinking…
-                        </span>
-                      ) : null)}
+                  <div className="message-bubble-wrap">
+                    <div
+                      className={
+                        isUser
+                          ? "message-content user-content"
+                          : "message-content"
+                      }
+                    >
+                      {item.content ||
+                        (isStreaming && isLastMessage ? (
+                          <span className="thinking">
+                            ForgeAI is thinking…
+                          </span>
+                        ) : null)}
+                    </div>
+                    {item.content && (
+                      <div className="message-actions">
+                        <button
+                          title="Copy message"
+                          onClick={() => void handleCopyMessage(item.content, index)}
+                        >
+                          {copiedMessage === index ? "Copied" : "Copy"}
+                        </button>
+                        {isUser && (
+                          <button
+                            title="Edit prompt"
+                            onClick={() => handleEditMessage(item.content)}
+                            disabled={isStreaming}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -569,7 +613,7 @@ function App() {
               </span>
             </div>
 
-            <div className="composer">
+            <div className={composerExpanded ? "composer composer-expanded" : "composer"}>
               <textarea
                 ref={textareaRef}
                 value={message}
@@ -583,13 +627,23 @@ function App() {
                 <span className="composer-context">
                   {mode} mode · Groq
                 </span>
-                <button
+                <div className="composer-actions">
+                  <button
+                    className="composer-expand-button"
+                    type="button"
+                    title={composerExpanded ? "Shrink composer" : "Expand composer"}
+                    onClick={() => setComposerExpanded((value) => !value)}
+                  >
+                    {composerExpanded ? "↙" : "↗"}
+                  </button>
+                  <button
                   className="send-button"
                   disabled={!message.trim() || isStreaming}
                   onClick={() => void handleSend()}
                 >
-                  {isStreaming ? "Thinking…" : "Send"} <span>↑</span>
-                </button>
+                    {isStreaming ? "Thinking…" : "Send"} <span>↑</span>
+                  </button>
+                </div>
               </div>
             </div>
 
