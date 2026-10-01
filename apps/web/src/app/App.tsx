@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { ParticleField } from "../components/ParticleField";
 import { useAuth } from "./providers/AuthProvider";
 import { useChat } from "../features/chat/hooks/useChat";
 import {
@@ -466,6 +467,7 @@ function App() {
       </aside>
 
       <main className="workspace">
+        <ParticleField />
         <header className="workspace-header">
           <div className="workspace-title">
             <span className="workspace-title-mark">/</span>
