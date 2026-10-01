@@ -136,12 +136,34 @@ function App() {
   const [composerExpanded, setComposerExpanded] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"dark" | "dim">(
+    () => (localStorage.getItem("forgeai-theme") as "dark" | "dim") || "dark",
+  );
+  const [compactMessages, setCompactMessages] = useState(
+    () => localStorage.getItem("forgeai-compact-messages") === "true",
+  );
+  const [showKeyboardHints, setShowKeyboardHints] = useState(
+    () => localStorage.getItem("forgeai-keyboard-hints") !== "false",
+  );
   const sidebarTimerRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     localStorage.setItem("forgeai-sidebar-autohide", String(autoHideSidebar));
   }, [autoHideSidebar]);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-theme", theme);
+    document.documentElement.dataset.forgeaiTheme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-compact-messages", String(compactMessages));
+  }, [compactMessages]);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-keyboard-hints", String(showKeyboardHints));
+  }, [showKeyboardHints]);
 
   useEffect(() => {
     if (!autoHideSidebar || sidebarHidden) return;
@@ -291,7 +313,7 @@ function App() {
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey && showKeyboardHints) {
       event.preventDefault();
       void handleSend();
     }
@@ -356,7 +378,7 @@ function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={theme === "dim" ? "app-shell theme-dim" : "app-shell"}>
       <aside
         className={sidebarHidden ? "sidebar sidebar-hidden" : "sidebar"}
         onMouseEnter={revealSidebar}
@@ -510,10 +532,53 @@ function App() {
                 <p>Server-side provider connection.</p>
                 <span className="connected-badge">Connected</span>
               </div>
-              <div className="settings-card">
+              <div className="settings-card settings-control-card">
                 <span className="settings-card-label">DEFAULT MODE</span>
                 <strong>{mode}</strong>
-                <p>Used when you start a fresh chat.</p>
+                <p>Choose the mode used for new prompts.</p>
+                <select
+                  value={mode}
+                  onChange={(event) => setMode(event.target.value as Mode)}
+                  className="settings-select"
+                >
+                  {modes.map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </div>
+              <div className="settings-card settings-control-card">
+                <span className="settings-card-label">APPEARANCE</span>
+                <strong>{theme === "dark" ? "Dark" : "Dim"}</strong>
+                <p>Adjust the workspace contrast.</p>
+                <div className="settings-segment">
+                  <button className={theme === "dark" ? "active" : ""} onClick={() => setTheme("dark")}>Dark</button>
+                  <button className={theme === "dim" ? "active" : ""} onClick={() => setTheme("dim")}>Dim</button>
+                </div>
+              </div>
+              <div className="settings-card settings-control-card">
+                <span className="settings-card-label">INTERFACE</span>
+                <strong>Sidebar behavior</strong>
+                <p>Automatically hide the sidebar after inactivity.</p>
+                <button className={autoHideSidebar ? "settings-toggle on" : "settings-toggle"} onClick={() => setAutoHideSidebar((value) => !value)}>
+                  <span>{autoHideSidebar ? "ON" : "OFF"}</span>
+                  <i />
+                </button>
+              </div>
+              <div className="settings-card settings-control-card">
+                <span className="settings-card-label">CHAT DISPLAY</span>
+                <strong>Compact messages</strong>
+                <p>Reduce spacing between conversation messages.</p>
+                <button className={compactMessages ? "settings-toggle on" : "settings-toggle"} onClick={() => setCompactMessages((value) => !value)}>
+                  <span>{compactMessages ? "ON" : "OFF"}</span>
+                  <i />
+                </button>
+              </div>
+              <div className="settings-card settings-control-card">
+                <span className="settings-card-label">KEYBOARD</span>
+                <strong>Enter to send</strong>
+                <p>Press Enter to send and Shift+Enter for a newline.</p>
+                <button className={showKeyboardHints ? "settings-toggle on" : "settings-toggle"} onClick={() => setShowKeyboardHints((value) => !value)}>
+                  <span>{showKeyboardHints ? "ON" : "OFF"}</span>
+                  <i />
+                </button>
               </div>
             </div>
             <button className="settings-signout" onClick={() => void signOut()}>
@@ -562,7 +627,7 @@ function App() {
             </div>
           </section>
         ) : (
-          <section className="messages">
+          <section className={compactMessages ? "messages messages-compact" : "messages"}>
             {messages.map((item, index) => {
               const isUser = item.role === "user";
               const isLastMessage = index === messages.length - 1;
@@ -662,9 +727,9 @@ function App() {
                 )}
               </div>
 
-              <span className="keyboard-hint">
+              {showKeyboardHints && <span className="keyboard-hint">
                 Enter to send · Shift+Enter for newline
-              </span>
+              </span>}
             </div>
 
             <div className={composerExpanded ? "composer composer-expanded" : "composer"}>
