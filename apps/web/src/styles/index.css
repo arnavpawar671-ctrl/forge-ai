@@ -1280,3 +1280,93 @@ button:disabled {
 .code-editor pre{min-width:max-content;margin:0;padding:14px 16px;color:#d9dcdf;font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.65;tab-size:2}
 .code-editor code{font:inherit}
 @media(max-width:720px){.code-block{width:100%}.code-editor{grid-template-columns:36px minmax(0,1fr)}.code-editor pre{padding:12px;font-size:10px}.code-line-numbers{padding-right:8px;font-size:10px}}
+
+/* Settings controls */
+.settings-control-card { min-height: 178px; }
+.settings-select {
+  width: 100%;
+  height: 34px;
+  margin-top: 13px;
+  padding: 0 9px;
+  border: 1px solid #292d32;
+  border-radius: 8px;
+  outline: 0;
+  background: #0d1013;
+  color: #d9dadd;
+  font-size: 10px;
+}
+.settings-segment {
+  display: flex;
+  gap: 4px;
+  margin-top: 13px;
+}
+.settings-segment button {
+  flex: 1;
+  height: 30px;
+  border: 1px solid #292d32;
+  border-radius: 7px;
+  background: #0d1013;
+  color: #737980;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+}
+.settings-segment button.active,
+.settings-segment button:hover {
+  border-color: #8a571e;
+  background: #17130e;
+  color: #ff981f;
+}
+.settings-toggle {
+  width: 58px;
+  height: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+  padding: 0 5px 0 8px;
+  border: 1px solid #292d32;
+  border-radius: 999px;
+  background: #0d1013;
+  color: #676d74;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 7px;
+}
+.settings-toggle i {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #4b5158;
+}
+.settings-toggle.on {
+  border-color: #75501f;
+  color: #ff981f;
+}
+.settings-toggle.on i {
+  background: #ff981f;
+}
+.messages-compact .message-row {
+  margin-bottom: 15px;
+}
+.messages-compact .message-content {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.theme-dim {
+  background: #0c0e11;
+}
+.theme-dim .workspace,
+.theme-dim .composer-area {
+  background: #0c0e11;
+}
+.theme-dim .sidebar {
+  background: #0a0c0f;
+}
+.theme-dim .message-content,
+.theme-dim .starter-card,
+.theme-dim .settings-card {
+  background: #14171b;
+}
+.theme-dim .composer,
+.theme-dim .chat-search {
+  background: #15181c;
+}
