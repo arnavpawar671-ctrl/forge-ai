@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 
 type ParticleFieldProps = {
   className?: string;
@@ -87,16 +87,15 @@ export function ParticleField({ className = "" }: ParticleFieldProps) {
       }
 
       if (mouse.active) {
-        for (let i = 0; i < particles.length; i += 1) {
-          const a = particles[i];
-          const dx = a.x - mouse.x;
-          const dy = a.y - mouse.y;
+        for (const particle of particles) {
+          const dx = particle.x - mouse.x;
+          const dy = particle.y - mouse.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance > 125) continue;
 
           context.beginPath();
           context.moveTo(mouse.x, mouse.y);
-          context.lineTo(a.x, a.y);
+          context.lineTo(particle.x, particle.y);
           context.strokeStyle = `rgba(255, 152, 31, ${Math.max(0, 0.16 - distance / 900)})`;
           context.lineWidth = 0.55;
           context.stroke();
