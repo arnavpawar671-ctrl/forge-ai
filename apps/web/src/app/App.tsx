@@ -79,12 +79,22 @@ function renderMessageContent(content: string, onCopyCode: (code: string, id: st
       return (
         <div className="code-block" key={index}>
           <div className="code-block-header">
-            <span className="code-language">{language}</span>
+            <div className="code-file-tab">
+              <span className="code-file-dot" />
+              <span>{language || "Code"}</span>
+            </div>
             <button className="code-copy-button" onClick={() => onCopyCode(code, codeId)}>
               {copiedCode === codeId ? "Copied" : "Copy"}
             </button>
           </div>
-          <pre><code>{code}</code></pre>
+          <div className="code-editor">
+            <div className="code-line-numbers" aria-hidden="true">
+              {code.split("\n").map((_, lineIndex) => (
+                <span key={lineIndex}>{lineIndex + 1}</span>
+              ))}
+            </div>
+            <pre><code>{code}</code></pre>
+          </div>
         </div>
       );
     }
