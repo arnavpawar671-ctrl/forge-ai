@@ -28,6 +28,27 @@ const modes: Mode[] = [
   "DevOps",
 ];
 
+const starterCards: Array<{
+  icon: string;
+  title: string;
+  mode: Mode;
+}> = [
+  { icon: "⌁", title: "Debug this React error", mode: "Debug" },
+  { icon: "◇", title: "Design a scalable REST API", mode: "Architect" },
+  { icon: "⌕", title: "Review this function", mode: "Review" },
+  { icon: "▱", title: "Explain this system design", mode: "Explain" },
+  { icon: "⚗", title: "Write unit tests", mode: "Implement" },
+  { icon: "⑂", title: "Plan a CI/CD pipeline", mode: "Architect" },
+];
+
+const visibleModes: Mode[] = [
+  "Explain",
+  "Debug",
+  "Architect",
+  "Review",
+  "Implement",
+];
+
 function createConversationTitle(message: string) {
   const cleaned = message
     .replace(/\s+/g, " ")
@@ -40,6 +61,10 @@ function createConversationTitle(message: string) {
   return words.length <= 7
     ? cleaned
     : words.slice(0, 7).join(" ") + "…";
+}
+
+function modeLabel(mode: Mode) {
+  return mode.toUpperCase() + " MODE";
 }
 
 function App() {
@@ -57,11 +82,11 @@ function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] =
     useState<string | null>(null);
-  const [showModeMenu, setShowModeMenu] = useState(false);
+  const [search, setSearch] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [showAllModes, setShowAllModes] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
-
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -71,10 +96,7 @@ function App() {
       try {
         setLoadingHistory(true);
         const items = await listConversations();
-
-        if (!cancelled) {
-          setConversations(items);
-        }
+        if (!cancelled) setConversations(items);
       } catch (error) {
         if (!cancelled) {
           setHistoryError(
@@ -84,14 +106,11 @@ function App() {
           );
         }
       } finally {
-        if (!cancelled) {
-          setLoadingHistory(false);
-        }
+        if (!cancelled) setLoadingHistory(false);
       }
     }
 
     void loadHistory();
-
     return () => {
       cancelled = true;
     };
@@ -100,15 +119,11 @@ function App() {
   const handleSelectConversation = async (
     conversation: Conversation,
   ) => {
-    if (isStreaming || activeConversationId === conversation.id) {
-      return;
-    }
+    if (isStreaming || activeConversationId === conversation.id) return;
 
     try {
       setHistoryError(null);
-      const storedMessages = await getConversationMessages(
-        conversation.id,
-      );
+      const storedMessages = await getConversationMessages(conversation.id);
 
       replaceMessages(
         storedMessages.map((item) => ({
@@ -123,10 +138,7 @@ function App() {
         (item) =>
           item.toLowerCase() === conversation.mode.toLowerCase(),
       );
-
-      if (matchingMode) {
-        setMode(matchingMode);
-      }
+      if (matchingMode) setMode(matchingMode);
     } catch (error) {
       setHistoryError(
         error instanceof Error
@@ -143,21 +155,15 @@ function App() {
     setMessage(textarea.value);
     textarea.style.height = "auto";
     textarea.style.height =
-      Math.min(textarea.scrollHeight, 240) + "px";
+      Math.min(textarea.scrollHeight, 180) + "px";
   };
 
   const handleSend = async () => {
     const trimmedMessage = message.trim();
-
-    if (!trimmedMessage || isStreaming) {
-      return;
-    }
+    if (!trimmedMessage || isStreaming) return;
 
     setMessage("");
-
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "52px";
-    }
+    if (textareaRef.current) textareaRef.current.style.height = "110px";
 
     const title = createConversationTitle(trimmedMessage);
 
@@ -167,12 +173,8 @@ function App() {
       activeConversationId,
       (conversation) => {
         setActiveConversationId(conversation.id);
-
         setConversations((current) => {
-          const exists = current.some(
-            (item) => item.id === conversation.id,
-          );
-
+          const exists = current.some((item) => item.id === conversation.id);
           if (exists) {
             return current.map((item) =>
               item.id === conversation.id
@@ -184,17 +186,12 @@ function App() {
                 : item,
             );
           }
-
           return [conversation, ...current];
         });
       },
       (conversationId) => {
-        if (!conversationId) {
-          return;
-        }
-
+        if (!conversationId) return;
         setActiveConversationId(conversationId);
-
         setConversations((current) =>
           current
             .map((item) =>
@@ -230,7 +227,6 @@ function App() {
 
   const handleNewChat = () => {
     if (isStreaming) return;
-
     clearMessages();
     setActiveConversationId(null);
     setHistoryError(null);
@@ -238,335 +234,330 @@ function App() {
     setMessage("");
   };
 
-  const sortedConversations = [...conversations].sort(
-    (a, b) =>
-      new Date(b.updated_at).getTime() -
-      new Date(a.updated_at).getTime(),
-  );
+  const filteredConversations = [...conversations]
+    .filter((conversation) =>
+      conversation.title
+        .toLowerCase()
+        .includes(search.trim().toLowerCase()),
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() -
+        new Date(a.updated_at).getTime(),
+    );
+
+  const handleStarter = (card: (typeof starterCards)[number]) => {
+    setMode(card.mode);
+    setMessage(card.title + ": ");
+    requestAnimationFrame(() => textareaRef.current?.focus());
+  };
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <img
-            src="/logo.svg"
-            alt="ForgeAI"
-            className="brand-logo"
-          />
-          <div className="brand-text">
-            <h1>ForgeAI</h1>
-            <p>AI Software Engineer</p>
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="sidebar-top">
+          <div className="brand-lockup">
+            <div className="brand-mark">
+              <img src="/logo.svg" alt="" />
+            </div>
+            <div className="brand-copy">
+              <div className="brand-name">ForgeAI</div>
+              <div className="brand-kicker">ENGINEERING COPILOT</div>
+            </div>
           </div>
-        </div>
 
-        <div className="connection-status">
-          <span className="connection-dot" />
-          <span>
-            {user?.email ?? "Signed in"}
-          </span>
-        </div>
-      </header>
-
-      <div className="workspace">
-        <aside className="sidebar">
           <button
             className="new-chat-button"
             onClick={handleNewChat}
             disabled={isStreaming}
           >
-            <span className="new-chat-icon">＋</span>
-            <span>New Chat</span>
+            <span>＋</span>
+            <strong>New chat</strong>
           </button>
 
-          <div className="sidebar-heading">
-            CHAT HISTORY
-          </div>
+          <label className="chat-search">
+            <span className="search-icon">⌕</span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search chats"
+              aria-label="Search chats"
+            />
+            <span className="search-shortcut">⌘K</span>
+          </label>
 
-          <div className="conversation-list">
+          <div className="history">
             {loadingHistory ? (
-              <div className="empty-history">
-                Loading conversations…
-              </div>
-            ) : sortedConversations.length === 0 ? (
-              <div className="empty-history">
-                No conversations yet.
+              <div className="history-empty">Loading chats…</div>
+            ) : filteredConversations.length === 0 ? (
+              <div className="history-empty">
+                {search
+                  ? "No matching chats."
+                  : "No chats yet. Start one above."}
               </div>
             ) : (
-              sortedConversations.map((conversation) => (
+              filteredConversations.map((conversation) => (
                 <button
                   key={conversation.id}
                   className={
                     activeConversationId === conversation.id
-                      ? "conversation-button active"
-                      : "conversation-button"
+                      ? "history-item active"
+                      : "history-item"
                   }
                   onClick={() =>
                     void handleSelectConversation(conversation)
                   }
                   disabled={isStreaming}
                 >
-                  <span className="conversation-icon">◇</span>
-                  <span className="conversation-title">
-                    {conversation.title}
-                  </span>
+                  <span className="history-dot">•</span>
+                  <span>{conversation.title}</span>
                 </button>
               ))
             )}
           </div>
+        </div>
 
-          <div className="sidebar-bottom">
+        <div className="sidebar-account">
+          <div className="account-avatar">
+            {(user?.email?.[0] ?? "A").toUpperCase()}
+          </div>
+          <div className="account-details">
+            <span className="account-email">
+              {user?.email ?? "Signed in"}
+            </span>
+            <span className="account-label">Personal workspace</span>
+          </div>
+          <button
+            className="account-action"
+            title="Sign out"
+            onClick={() => void signOut()}
+          >
+            ↪
+          </button>
+        </div>
+      </aside>
+
+      <main className="workspace">
+        <header className="workspace-header">
+          <div className="workspace-title">
+            <span className="workspace-title-mark">/</span>
+            <strong>
+              {messages.length > 0
+                ? conversations.find(
+                    (item) => item.id === activeConversationId,
+                  )?.title ?? "New chat"
+                : "New chat"}
+            </strong>
+          </div>
+
+          <div className="header-actions">
+            <span className="demo-pill">
+              <span>●</span>
+              Demo mode
+            </span>
             <button
-              className="sidebar-action"
-              onClick={() =>
-                setShowSettings((current) => !current)
-              }
+              className="header-icon-button"
+              title="New chat"
+              onClick={handleNewChat}
             >
-              <span>⚙</span>
-              <span>Settings</span>
+              ＋
+            </button>
+            <button
+              className="header-icon-button"
+              title="Settings"
+              onClick={() => setShowSettings((value) => !value)}
+            >
+              ⚙
             </button>
           </div>
-        </aside>
+        </header>
 
-        <main className="chat-area">
-          {showSettings ? (
-            <section className="settings-panel">
-              <div className="settings-header">
-                <div>
-                  <p className="settings-eyebrow">
-                    FORGEAI
-                  </p>
-                  <h2>Settings</h2>
-                </div>
+        {showSettings ? (
+          <section className="settings-panel">
+            <div className="settings-heading">
+              <span>FORGEAI</span>
+              <h1>Settings</h1>
+              <p>Configure the workspace without leaving your chat.</p>
+            </div>
+            <div className="settings-grid">
+              <div className="settings-card">
+                <span className="settings-card-label">ACCOUNT</span>
+                <strong>{user?.email ?? "Signed in"}</strong>
+                <p>Your ForgeAI account and chat history.</p>
+              </div>
+              <div className="settings-card">
+                <span className="settings-card-label">AI PROVIDER</span>
+                <strong>Groq</strong>
+                <p>Server-side provider connection.</p>
+                <span className="connected-badge">Connected</span>
+              </div>
+              <div className="settings-card">
+                <span className="settings-card-label">DEFAULT MODE</span>
+                <strong>{mode}</strong>
+                <p>Used when you start a fresh chat.</p>
+              </div>
+            </div>
+            <button className="settings-signout" onClick={() => void signOut()}>
+              Sign out
+            </button>
+          </section>
+        ) : messages.length === 0 ? (
+          <section className="welcome-workspace">
+            <div className="grid-overlay" />
 
-                <button
-                  className="settings-close"
-                  onClick={() => setShowSettings(false)}
+            <div className="welcome-content">
+              <div className="welcome-eyebrow">
+                <span className="eyebrow-line" />
+                SOFTWARE ENGINEERING AI
+              </div>
+
+              <h1 className="welcome-title">
+                <span>Engineering</span>{" "}
+                <span>answers,</span>{" "}
+                <span>not small talk.</span>
+              </h1>
+
+              <p className="welcome-description">
+                ForgeAI is tuned for software work: debugging,
+                architecture and system design, DevOps, databases,
+                APIs, testing, security and code review. Pick a
+                starting point or just describe what you’re building.
+              </p>
+
+              <div className="starter-grid">
+                {starterCards.map((card) => (
+                  <button
+                    className="starter-card"
+                    key={card.title}
+                    onClick={() => handleStarter(card)}
+                  >
+                    <span className="starter-icon">{card.icon}</span>
+                    <span className="starter-copy">
+                      <strong>{card.title}</strong>
+                      <small>{modeLabel(card.mode)}</small>
+                    </span>
+                    <span className="starter-arrow">↗</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="messages">
+            {messages.map((item, index) => {
+              const isUser = item.role === "user";
+              const isLastMessage = index === messages.length - 1;
+
+              return (
+                <div
+                  key={item.role + "-" + index}
+                  className={
+                    isUser
+                      ? "message-row message-row-user"
+                      : "message-row message-row-assistant"
+                  }
                 >
-                  ×
+                  <div className="message-meta">
+                    <span className={isUser ? "role-chip user" : "role-chip"}>
+                      {isUser ? "YOU" : "FORGEAI"}
+                    </span>
+                  </div>
+                  <div
+                    className={
+                      isUser
+                        ? "message-content user-content"
+                        : "message-content"
+                    }
+                  >
+                    {item.content ||
+                      (isStreaming && isLastMessage ? (
+                        <span className="thinking">
+                          ForgeAI is thinking…
+                        </span>
+                      ) : null)}
+                  </div>
+                </div>
+              );
+            })}
+            {historyError && <div className="history-error">{historyError}</div>}
+          </section>
+        )}
+
+        {!showSettings && (
+          <section className="composer-area">
+            <div className="composer-mode-row">
+              <div className="mode-segment">
+                {visibleModes.map((item) => (
+                  <button
+                    key={item}
+                    className={mode === item ? "mode-pill selected" : "mode-pill"}
+                    onClick={() => setMode(item)}
+                    disabled={isStreaming}
+                  >
+                    {item}
+                  </button>
+                ))}
+                <button
+                  className="mode-more"
+                  onClick={() => setShowAllModes((value) => !value)}
+                  disabled={isStreaming}
+                  title="More engineering modes"
+                >
+                  ···
+                </button>
+                {showAllModes && (
+                  <div className="mode-popover">
+                    {modes.map((item) => (
+                      <button
+                        key={item}
+                        className={mode === item ? "mode-popover-item active" : "mode-popover-item"}
+                        onClick={() => {
+                          setMode(item);
+                          setShowAllModes(false);
+                        }}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <span className="keyboard-hint">
+                Enter to send · Shift+Enter for newline
+              </span>
+            </div>
+
+            <div className="composer">
+              <textarea
+                ref={textareaRef}
+                value={message}
+                onChange={handleMessageChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Describe the bug, paste the code, or ask for a design..."
+                rows={3}
+                disabled={isStreaming}
+              />
+              <div className="composer-bottom">
+                <span className="composer-context">
+                  {mode} mode · Groq
+                </span>
+                <button
+                  className="send-button"
+                  disabled={!message.trim() || isStreaming}
+                  onClick={() => void handleSend()}
+                >
+                  {isStreaming ? "Thinking…" : "Send"} <span>↑</span>
                 </button>
               </div>
-
-              <div className="settings-card">
-                <div>
-                  <strong>Account</strong>
-                  <p>{user?.email ?? "Signed in"}</p>
-                </div>
-              </div>
-
-              <div className="settings-card">
-                <div>
-                  <strong>AI Provider</strong>
-                  <p>Groq</p>
-                </div>
-                <span className="settings-status">
-                  Connected
-                </span>
-              </div>
-
-              <div className="settings-card">
-                <div>
-                  <strong>Chat History</strong>
-                  <p>
-                    Stored securely in your ForgeAI account.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                className="sidebar-action"
-                onClick={() => void signOut()}
-              >
-                <span>↪</span>
-                <span>Sign out</span>
-              </button>
-            </section>
-          ) : messages.length === 0 ? (
-            <section className="welcome">
-              <img
-                src="/logo.svg"
-                alt=""
-                className="welcome-logo"
-              />
-
-              <div className="mode-badge">
-                {mode} Mode
-              </div>
-
-              <h2>Build something powerful.</h2>
-
-              <p>
-                ForgeAI is your AI software engineer for
-                coding, debugging, architecture, testing,
-                security and DevOps.
-              </p>
-            </section>
-          ) : (
-            <section className="messages">
-              {messages.map((item, index) => {
-                const isUser = item.role === "user";
-                const isLastMessage =
-                  index === messages.length - 1;
-
-                return (
-                  <div
-                    key={item.role + "-" + index}
-                    className={
-                      "message-row " +
-                      (isUser
-                        ? "message-row-user"
-                        : "message-row-assistant")
-                    }
-                  >
-                    <div
-                      className={
-                        "message-wrapper " +
-                        (isUser
-                          ? "message-wrapper-user"
-                          : "message-wrapper-assistant")
-                      }
-                    >
-                      <div
-                        className={
-                          "message-role " +
-                          (isUser
-                            ? "message-role-user"
-                            : "message-role-assistant")
-                        }
-                      >
-                        {isUser ? "You" : "ForgeAI"}
-                      </div>
-
-                      <div
-                        className={
-                          "message-bubble " +
-                          (isUser
-                            ? "message-bubble-user"
-                            : "message-bubble-assistant")
-                        }
-                      >
-                        {item.content ||
-                          (isStreaming &&
-                          isLastMessage ? (
-                            <span className="thinking">
-                              Thinking...
-                            </span>
-                          ) : null)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </section>
-          )}
-
-          {historyError && (
-            <div className="empty-history">
-              {historyError}
             </div>
-          )}
 
-          {!showSettings && (
-            <>
-              <section className="composer">
-                <textarea
-                  ref={textareaRef}
-                  value={message}
-                  onChange={handleMessageChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder={
-                    "Ask ForgeAI to " +
-                    mode.toLowerCase() +
-                    "..."
-                  }
-                  rows={1}
-                  disabled={isStreaming}
-                />
-
-                <div className="composer-toolbar">
-                  <div className="mode-selector">
-                    <button
-                      className="mode-selector-button"
-                      onClick={() =>
-                        setShowModeMenu((current) => !current)
-                      }
-                      disabled={isStreaming}
-                    >
-                      <span className="mode-selector-icon">
-                        {mode === "Explain" && "💡"}
-                        {mode === "Debug" && "🐛"}
-                        {mode === "Architect" && "🏗️"}
-                        {mode === "Review" && "🔍"}
-                        {mode === "Implement" && "⚙️"}
-                        {mode === "Test" && "🧪"}
-                        {mode === "Security" && "🛡️"}
-                        {mode === "DevOps" && "🚀"}
-                      </span>
-
-                      <span>{mode}</span>
-                      <span className="mode-chevron">▾</span>
-                    </button>
-
-                    {showModeMenu && (
-                      <div className="mode-menu">
-                        {modes.map((item) => (
-                          <button
-                            key={item}
-                            className={
-                              mode === item
-                                ? "mode-menu-item active"
-                                : "mode-menu-item"
-                            }
-                            onClick={() => {
-                              setMode(item);
-                              setShowModeMenu(false);
-                            }}
-                          >
-                            <span>
-                              {item === "Explain" && "💡"}
-                              {item === "Debug" && "🐛"}
-                              {item === "Architect" && "🏗️"}
-                              {item === "Review" && "🔍"}
-                              {item === "Implement" && "⚙️"}
-                              {item === "Test" && "🧪"}
-                              {item === "Security" && "🛡️"}
-                              {item === "DevOps" && "🚀"}
-                            </span>
-                            <span>{item}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="composer-info">
-                    <span>Enter to send</span>
-                    <span className="separator">•</span>
-                    <span>Shift + Enter</span>
-                  </div>
-
-                  <button
-                    className="send-button"
-                    disabled={
-                      !message.trim() || isStreaming
-                    }
-                    onClick={() => void handleSend()}
-                  >
-                    {isStreaming ? "Thinking..." : "Send"}
-                    <span>
-                      {isStreaming ? "..." : "↑"}
-                    </span>
-                  </button>
-                </div>
-              </section>
-
-              <p className="composer-hint">
-                {mode} Mode • Enter to send • Shift + Enter
-                for a new line • ForgeAI can make mistakes.
-              </p>
-            </>
-          )}
-        </main>
-      </div>
+            <p className="composer-disclaimer">
+              ForgeAI can make mistakes. Verify important technical decisions.
+            </p>
+          </section>
+        )}
+      </main>
     </div>
   );
 }
