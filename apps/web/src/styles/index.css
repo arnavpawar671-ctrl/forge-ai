@@ -702,7 +702,7 @@ button:disabled {
 }
 
 .composer {
-  width: min(760px, 100%);
+  width: min(620px, 100%);
   margin: 0 auto;
   overflow: hidden;
   border: 1px solid #292d32;
