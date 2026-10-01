@@ -1,0 +1,77 @@
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <linearGradient
+      id="forge"
+      x1="120"
+      y1="100"
+      x2="400"
+      y2="410"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#60A5FA"/>
+      <stop offset="0.5" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Clean dark canvas -->
+  <rect
+    width="512"
+    height="512"
+    rx="128"
+    fill="#080B12"
+  />
+
+  <!-- Signature F -->
+  <path
+    d="
+      M154 376
+      C154 376 169 350 181 318
+      C194 284 201 245 210 207
+      C219 169 238 133 267 119
+      C292 107 324 111 343 128
+      C359 143 359 163 345 177
+      C331 191 306 194 282 190
+      C253 185 226 178 201 183
+      C174 188 154 204 151 226
+      C147 250 165 266 193 269
+      C228 273 267 261 303 247
+    "
+    stroke="url(#forge)"
+    stroke-width="28"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Signature slash -->
+  <path
+    d="
+      M178 302
+      C221 303 275 293 327 270
+      C352 259 371 247 389 229
+    "
+    stroke="url(#forge)"
+    stroke-width="22"
+    stroke-linecap="round"
+  />
+
+  <!-- Forge spark -->
+  <path
+    d="
+      M373 154
+      L363 176
+      L382 168
+      L374 188
+    "
+    stroke="#BFDBFE"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

@@ -1,0 +1,73 @@
+<svg
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <linearGradient
+      id="forge"
+      x1="12"
+      y1="8"
+      x2="54"
+      y2="56"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#60A5FA"/>
+      <stop offset="0.5" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+
+  <rect
+    width="64"
+    height="64"
+    rx="16"
+    fill="#080B12"
+  />
+
+  <!-- Signature F -->
+  <path
+    d="
+      M19 48
+      C19 48 22 43 24 37
+      C26 30 27 24 29 19
+      C31 13 36 10 41 12
+      C45 13 46 16 44 19
+      C42 22 38 22 34 21
+      C29 20 25 21 23 24
+      C21 27 24 30 29 30
+      C35 30 41 28 47 25
+    "
+    stroke="url(#forge)"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Signature slash -->
+  <path
+    d="
+      M24 36
+      C31 36 39 33 47 29
+    "
+    stroke="url(#forge)"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+
+  <!-- Spark -->
+  <path
+    d="
+      M45 15
+      L43 19
+      L47 18
+      L45 22
+    "
+    stroke="#BFDBFE"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
