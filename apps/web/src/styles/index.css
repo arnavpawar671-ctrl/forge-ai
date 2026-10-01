@@ -55,9 +55,9 @@ button:disabled {
 /* Sidebar */
 
 .sidebar {
-  width: 27%;
-  min-width: 285px;
-  max-width: 390px;
+  width: 24%;
+  min-width: 250px;
+  max-width: 345px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -399,12 +399,14 @@ button:disabled {
   position: relative;
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .grid-overlay {
   position: absolute;
   inset: 0;
+  min-height: 100%;
   pointer-events: none;
   opacity: 0.34;
   background-image:
@@ -418,7 +420,8 @@ button:disabled {
   position: relative;
   width: min(900px, calc(100% - 80px));
   margin: 0 auto;
-  padding-top: clamp(70px, 12vh, 128px);
+  padding-top: clamp(88px, 14vh, 150px);
+  padding-bottom: 42px;
 }
 
 .welcome-eyebrow {
@@ -878,8 +881,8 @@ button:disabled {
 
 @media (max-width: 920px) {
   .sidebar {
-    width: 29%;
-    min-width: 245px;
+    width: 27%;
+    min-width: 235px;
   }
 
   .welcome-content {
