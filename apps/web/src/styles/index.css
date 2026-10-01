@@ -1370,3 +1370,30 @@ button:disabled {
 .theme-dim .chat-search {
   background: #15181c;
 }
+
+
+/* Interactive cursor particle field */
+.particle-field {
+  position: absolute;
+  inset: 58px 0 0;
+  width: 100%;
+  height: calc(100% - 58px);
+  z-index: 0;
+  pointer-events: auto;
+  opacity: 0.72;
+}
+
+.workspace > :not(.particle-field) {
+  position: relative;
+  z-index: 1;
+}
+
+.particle-field + .workspace-header {
+  z-index: 10;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .particle-field {
+    display: none;
+  }
+}
