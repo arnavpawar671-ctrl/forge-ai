@@ -702,7 +702,7 @@ button:disabled {
 }
 
 .composer {
-  width: min(900px, 100%);
+  width: min(760px, 100%);
   margin: 0 auto;
   overflow: hidden;
   border: 1px solid #292d32;
@@ -716,8 +716,8 @@ button:disabled {
 
 .composer textarea {
   width: 100%;
-  min-height: 110px;
-  max-height: 180px;
+  min-height: 76px;
+  max-height: 220px;
   display: block;
   resize: none;
   border: 0;
