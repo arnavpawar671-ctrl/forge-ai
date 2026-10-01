@@ -155,7 +155,7 @@ function App() {
     setMessage(textarea.value);
     textarea.style.height = "auto";
     textarea.style.height =
-      Math.min(textarea.scrollHeight, 180) + "px";
+      Math.min(textarea.scrollHeight, 220) + "px";
   };
 
   const handleSend = async () => {
@@ -163,7 +163,7 @@ function App() {
     if (!trimmedMessage || isStreaming) return;
 
     setMessage("");
-    if (textareaRef.current) textareaRef.current.style.height = "110px";
+    if (textareaRef.current) textareaRef.current.style.height = "76px";
 
     const title = createConversationTitle(trimmedMessage);
 
