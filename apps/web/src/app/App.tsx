@@ -87,7 +87,32 @@ function App() {
   const [showAllModes, setShowAllModes] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [sidebarHidden, setSidebarHidden] = useState(false);
+  const [autoHideSidebar, setAutoHideSidebar] = useState(() => localStorage.getItem("forgeai-sidebar-autohide") === "true");
+  const sidebarTimerRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-sidebar-autohide", String(autoHideSidebar));
+  }, [autoHideSidebar]);
+
+  useEffect(() => {
+    if (!autoHideSidebar || sidebarHidden) return;
+    sidebarTimerRef.current = window.setTimeout(() => setSidebarHidden(true), 5000);
+    return () => {
+      if (sidebarTimerRef.current) window.clearTimeout(sidebarTimerRef.current);
+    };
+  }, [autoHideSidebar, sidebarHidden]);
+
+  const revealSidebar = () => {
+    if (sidebarTimerRef.current) window.clearTimeout(sidebarTimerRef.current);
+    setSidebarHidden(false);
+  };
+
+  const hideSidebar = () => {
+    if (sidebarTimerRef.current) window.clearTimeout(sidebarTimerRef.current);
+    setSidebarHidden(true);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -254,7 +279,10 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <aside
+        className={sidebarHidden ? "sidebar sidebar-hidden" : "sidebar"}
+        onMouseEnter={revealSidebar}
+      >
         <div className="sidebar-top">
           <div className="brand-lockup">
             <div className="brand-mark">
@@ -363,6 +391,13 @@ function App() {
               ＋
             </button>
             <button
+              className="header-icon-button sidebar-toggle-button"
+              title={sidebarHidden ? "Show sidebar" : "Hide sidebar"}
+              onClick={sidebarHidden ? revealSidebar : hideSidebar}
+            >
+              {sidebarHidden ? "☰" : "‹"}
+            </button>
+            <button
               className="header-icon-button"
               title="Settings"
               onClick={() => setShowSettings((value) => !value)}
@@ -371,6 +406,12 @@ function App() {
             </button>
           </div>
         </header>
+
+        {sidebarHidden && (
+          <button className="sidebar-show-button" onClick={revealSidebar} title="Show sidebar">
+            Show sidebar
+          </button>
+        )}
 
         {showSettings ? (
           <section className="settings-panel">
