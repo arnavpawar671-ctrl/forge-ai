@@ -113,7 +113,7 @@ export function ParticleField({
         uAlphaParticles: { value: alphaParticles ? 1 : 0 },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 1.5) },
       },
-      vertex: \`
+      vertex: `
         attribute float aRandom;
         attribute vec3 aColor;
 
@@ -160,8 +160,8 @@ export function ParticleField({
           vColor = aColor;
           vAlpha = 0.42 + aRandom * 0.58;
         }
-      \`,
-      fragment: \`
+      `,
+      fragment: `
         precision highp float;
 
         varying vec3 vColor;
@@ -177,7 +177,7 @@ export function ParticleField({
           float glow = pow(soft, 2.2);
           gl_FragColor = vec4(vColor, glow * vAlpha);
         }
-      \`,
+      `,
     });
 
     const mesh = new Mesh(gl, {
@@ -268,7 +268,7 @@ export function ParticleField({
   return (
     <div
       ref={rootRef}
-      className={\`particle-field \${className}\`}
+      className={`particle-field \${className}`}
       aria-hidden="true"
     />
   );
