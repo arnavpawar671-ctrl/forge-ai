@@ -18,6 +18,17 @@ type Mode =
   | "Security"
   | "DevOps";
 
+const personalities = [
+  { id: "friendly_engineer", label: "Friendly Engineer", description: "Warm, practical, and conversational" },
+  { id: "senior_engineer", label: "Senior Engineer", description: "Precise and production-minded" },
+  { id: "mentor", label: "Mentor", description: "Teaches while solving" },
+  { id: "fast_coder", label: "Fast Coder", description: "Concise and implementation-first" },
+  { id: "architect", label: "Architect", description: "Systems and trade-offs focused" },
+  { id: "pair_programmer", label: "Pair Programmer", description: "Collaborative and iterative" },
+];
+
+type Personality = (typeof personalities)[number]["id"];
+
 const modes: Mode[] = [
   "Explain",
   "Debug",
@@ -123,6 +134,12 @@ function App() {
   } = useChat();
 
   const [message, setMessage] = useState("");
+  const [personality, setPersonality] = useState<Personality>(() => {
+    const saved = localStorage.getItem("forgeai-personality");
+    return personalities.some((item) => item.id === saved)
+      ? (saved as Personality)
+      : "friendly_engineer";
+  });
   const [mode, setMode] = useState<Mode>(() => {
     const saved = localStorage.getItem("forgeai-default-mode");
     return modes.includes(saved as Mode) ? (saved as Mode) : "Explain";
@@ -177,6 +194,10 @@ function App() {
     localStorage.setItem("forgeai-reduced-motion", String(reducedMotion));
     document.documentElement.dataset.forgeaiReducedMotion = String(reducedMotion);
   }, [reducedMotion]);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-personality", personality);
+  }, [personality]);
 
   useEffect(() => {
     localStorage.setItem("forgeai-default-mode", mode);
@@ -281,6 +302,7 @@ function App() {
     await sendMessage(
       trimmedMessage,
       mode.toLowerCase(),
+      personality,
       activeConversationId,
       (conversation) => {
         setActiveConversationId(conversation.id);
@@ -564,6 +586,20 @@ function App() {
                 <span className="connected-badge">Connected</span>
               </div>
               <div className="settings-card settings-control-card">
+                <span className="settings-card-label">PERSONALITY</span>
+                <strong>{personalities.find((item) => item.id === personality)?.label}</strong>
+                <p>{personalities.find((item) => item.id === personality)?.description}</p>
+                <select
+                  value={personality}
+                  onChange={(event) => setPersonality(event.target.value as Personality)}
+                  className="settings-select"
+                >
+                  {personalities.map((item) => (
+                    <option key={item.id} value={item.id}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="settings-card settings-control-card">
                 <span className="settings-card-label">DEFAULT MODE</span>
                 <strong>{mode}</strong>
                 <p>Choose the mode used for new prompts.</p>
@@ -628,12 +664,14 @@ function App() {
                   className="settings-reset-button"
                   onClick={() => {
                     localStorage.removeItem("forgeai-theme");
+                    localStorage.removeItem("forgeai-personality");
                     localStorage.removeItem("forgeai-default-mode");
                     localStorage.removeItem("forgeai-sidebar-autohide");
                     localStorage.removeItem("forgeai-compact-messages");
                     localStorage.removeItem("forgeai-keyboard-hints");
                     localStorage.removeItem("forgeai-reduced-motion");
                     setTheme("dark");
+                    setPersonality("friendly_engineer");
                     setMode("Explain");
                     setAutoHideSidebar(false);
                     setCompactMessages(false);
