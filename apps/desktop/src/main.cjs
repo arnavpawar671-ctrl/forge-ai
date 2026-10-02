@@ -2,9 +2,35 @@ const { app, BrowserWindow, shell } = require("electron");
 const path = require("node:path");
 
 const isDev = !app.isPackaged;
-const rendererUrl = process.env.FORGEAI_DEV_URL || "http://127.0.0.1:5173";
+const rendererUrl = process.env.FORGEAI_DEV_URL || "http://127.0.0.1:5173/";
 
-function createWindow() {
+const DEV_SERVER_RETRIES = 30;
+const DEV_SERVER_RETRY_DELAY_MS = 500;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForDevServer(url) {
+  for (let attempt = 1; attempt <= DEV_SERVER_RETRIES; attempt += 1) {
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      if (response.ok || response.status < 500) {
+        return;
+      }
+    } catch {
+      // Vite may still be starting. Keep polling.
+    }
+
+    await sleep(DEV_SERVER_RETRY_DELAY_MS);
+  }
+
+  throw new Error(
+    `ForgeAI frontend did not become available at ${url} after ${DEV_SERVER_RETRIES} attempts.`,
+  );
+}
+
+async function createWindow() {
   const window = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -28,19 +54,43 @@ function createWindow() {
     return { action: "deny" };
   });
 
+  window.webContents.on(
+    "did-fail-load",
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      if (isMainFrame) {
+        console.error(
+          `ForgeAI failed to load ${validatedURL}: ${errorDescription} (${errorCode})`,
+        );
+      }
+    },
+  );
+
   if (isDev) {
-    window.loadURL(rendererUrl);
+    console.log(`Waiting for ForgeAI frontend at ${rendererUrl}...`);
+    await waitForDevServer(rendererUrl);
+    console.log("ForgeAI frontend is ready.");
+    await window.loadURL(rendererUrl);
     window.webContents.openDevTools({ mode: "detach" });
   } else {
-    window.loadFile(path.join(process.resourcesPath, "web", "dist", "index.html"));
+    await window.loadFile(
+      path.join(process.resourcesPath, "web", "dist", "index.html"),
+    );
   }
 }
 
-app.whenReady().then(() => {
-  createWindow();
+app.whenReady().then(async () => {
+  try {
+    await createWindow();
+  } catch (error) {
+    console.error(error);
+    app.quit();
+    return;
+  }
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      void createWindow();
+    }
   });
 });
 
