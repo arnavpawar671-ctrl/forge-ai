@@ -72,3 +72,15 @@ export async function getConversationMessages(
   const payload = await response.json();
   return payload.messages ?? [];
 }
+
+
+export async function deleteConversation(conversationId: string): Promise<void> {
+  const response = await authorizedFetch(
+    "/api/v1/conversations/" + conversationId,
+    { method: "DELETE" },
+  );
+
+  if (!response.ok) {
+    throw new Error("Could not delete this conversation.");
+  }
+}
