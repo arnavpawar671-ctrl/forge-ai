@@ -34,10 +34,16 @@ button:disabled { cursor: not-allowed; }
 .history::-webkit-scrollbar, .messages::-webkit-scrollbar { width: 5px; }
 .history::-webkit-scrollbar-thumb, .messages::-webkit-scrollbar-thumb { background: #d5cce2; border-radius: 999px; }
 .history-empty { padding: 4px 7px; color: #94899f; font-size: 11px; line-height: 1.5; }
-.history-item { width: 100%; min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 8px 9px; margin-bottom: 3px; overflow: hidden; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #746a7e; text-align: left; font-size: 11px; transition: background 140ms ease, color 140ms ease, border-color 140ms ease; }
-.history-item:hover:not(:disabled), .history-item.active { border-color: #ddd4ed; background: #fff; color: #30283a; }
+.history-item { width: 100%; min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 8px 6px 8px 9px; margin-bottom: 3px; overflow: hidden; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #746a7e; text-align: left; font-size: 11px; transition: background 140ms ease, color 140ms ease, border-color 140ms ease; cursor: pointer; }
+.history-item:focus-visible { outline: 1px solid #a78bfa; outline-offset: 1px; }
+.history-item:has(.history-delete-button:disabled) { cursor: not-allowed; }
+.history-item:hover, .history-item.active { border-color: #ddd4ed; background: #fff; color: #30283a; }
 .history-dot { color: #a78bfa; font-size: 14px; }
-.history-item span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-title { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-delete-button { width: 24px; height: 24px; flex: 0 0 24px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 7px; background: transparent; color: #9a90a4; font-size: 15px; line-height: 1; opacity: 0; transition: opacity 140ms ease, background 140ms ease, color 140ms ease, border-color 140ms ease; }
+.history-item:hover .history-delete-button, .history-item:focus-within .history-delete-button { opacity: 1; }
+.history-delete-button:hover:not(:disabled) { border-color: #5b3b68; background: #2a172f; color: #e9b4ff; }
+.history-delete-button:disabled { opacity: .25; cursor: not-allowed; }
 
 .sidebar-account { position: relative; display: flex; align-items: center; gap: 10px; min-height: 70px; padding: 12px 16px; border-top: 1px solid #e4deee; }
 .account-avatar { width: 32px; height: 32px; flex: 0 0 32px; display: grid; place-items: center; border: 1px solid #d8cee7; border-radius: 50%; background: #fff; color: #4a4055; font-size: 12px; font-weight: 700; }
