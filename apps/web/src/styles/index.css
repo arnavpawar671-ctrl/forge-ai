@@ -514,3 +514,109 @@ button:disabled { cursor: not-allowed; }
 [data-forgeai-reduced-motion="true"] .thinking {
   animation: none !important;
 }
+
+
+/* Ambient motion: layered grid drift and gentle depth on interactive surfaces. */
+@keyframes forgeai-grid-drift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 44px 44px, 44px 44px; }
+}
+@keyframes forgeai-eyebrow-glow {
+  0%,100% { opacity: .55; transform: scaleX(.85); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+@keyframes forgeai-icon-float {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(2deg); }
+}
+@keyframes forgeai-orb-breathe {
+  0%,100% { box-shadow: 0 0 0 rgba(167,139,250,0); }
+  50% { box-shadow: 0 0 18px rgba(167,139,250,.18); }
+}
+
+.grid-overlay {
+  animation: forgeai-grid-drift 18s linear infinite;
+}
+.eyebrow-line {
+  transform-origin: left center;
+  animation: forgeai-eyebrow-glow 2.8s ease-in-out infinite;
+}
+.starter-icon {
+  animation: forgeai-icon-float 4.5s ease-in-out infinite;
+}
+.starter-card:nth-child(2) .starter-icon { animation-delay: -1.1s; }
+.starter-card:nth-child(3) .starter-icon { animation-delay: -2.2s; }
+.starter-card:nth-child(4) .starter-icon { animation-delay: -3.3s; }
+.starter-card:nth-child(5) .starter-icon { animation-delay: -.7s; }
+.starter-card:nth-child(6) .starter-icon { animation-delay: -1.8s; }
+
+.brand-mark {
+  animation: forgeai-orb-breathe 3.6s ease-in-out infinite;
+}
+.theme-dark .brand-mark {
+  animation-name: forgeai-orb-breathe;
+}
+
+.particle-field {
+  opacity: .64;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 78%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 78%, transparent 100%);
+  transition: opacity 500ms ease, filter 500ms ease;
+}
+.theme-dark .particle-field {
+  opacity: .78;
+  filter: saturate(1.12) brightness(1.08);
+}
+.theme-light .particle-field {
+  opacity: .58;
+  filter: saturate(.95);
+}
+
+.starter-card,
+.history-item,
+.header-icon-button,
+.mode-pill,
+.composer-expand-button,
+.send-button,
+.account-action {
+  will-change: transform;
+}
+
+.starter-card:hover {
+  transform: translateY(-3px);
+}
+.history-item:hover:not(:disabled) {
+  transform: translateX(2px);
+}
+.header-icon-button:hover {
+  transform: translateY(-1px);
+}
+.send-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-overlay,
+  .eyebrow-line,
+  .starter-icon,
+  .brand-mark {
+    animation: none !important;
+  }
+  .starter-card:hover,
+  .history-item:hover:not(:disabled),
+  .header-icon-button:hover,
+  .send-button:hover:not(:disabled) {
+    transform: none !important;
+  }
+}
+
+[data-forgeai-reduced-motion="true"] .grid-overlay,
+[data-forgeai-reduced-motion="true"] .eyebrow-line,
+[data-forgeai-reduced-motion="true"] .starter-icon,
+[data-forgeai-reduced-motion="true"] .brand-mark {
+  animation: none !important;
+}
+[data-forgeai-reduced-motion="true"] .particle-field {
+  opacity: .28 !important;
+  filter: none !important;
+}
