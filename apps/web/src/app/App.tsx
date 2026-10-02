@@ -123,7 +123,10 @@ function App() {
   } = useChat();
 
   const [message, setMessage] = useState("");
-  const [mode, setMode] = useState<Mode>("Explain");
+  const [mode, setMode] = useState<Mode>(() => {
+    const saved = localStorage.getItem("forgeai-default-mode");
+    return modes.includes(saved as Mode) ? (saved as Mode) : "Explain";
+  });
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] =
     useState<string | null>(null);
@@ -147,6 +150,9 @@ function App() {
   const [showKeyboardHints, setShowKeyboardHints] = useState(
     () => localStorage.getItem("forgeai-keyboard-hints") !== "false",
   );
+  const [reducedMotion, setReducedMotion] = useState(
+    () => localStorage.getItem("forgeai-reduced-motion") === "true",
+  );
   const sidebarTimerRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -166,6 +172,15 @@ function App() {
   useEffect(() => {
     localStorage.setItem("forgeai-keyboard-hints", String(showKeyboardHints));
   }, [showKeyboardHints]);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-reduced-motion", String(reducedMotion));
+    document.documentElement.dataset.forgeaiReducedMotion = String(reducedMotion);
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    localStorage.setItem("forgeai-default-mode", mode);
+  }, [mode]);
 
   useEffect(() => {
     if (!autoHideSidebar || sidebarHidden) return;
@@ -576,6 +591,40 @@ function App() {
                 <button className={showKeyboardHints ? "settings-toggle on" : "settings-toggle"} onClick={() => setShowKeyboardHints((value) => !value)}>
                   <span>{showKeyboardHints ? "ON" : "OFF"}</span>
                   <i />
+                </button>
+              </div>
+              <div className="settings-card settings-control-card">
+                <span className="settings-card-label">ACCESSIBILITY</span>
+                <strong>Reduce motion</strong>
+                <p>Reduce UI transitions and particle movement.</p>
+                <button className={reducedMotion ? "settings-toggle on" : "settings-toggle"} onClick={() => setReducedMotion((value) => !value)}>
+                  <span>{reducedMotion ? "ON" : "OFF"}</span>
+                  <i />
+                </button>
+              </div>
+              <div className="settings-card settings-control-card">
+                <span className="settings-card-label">PREFERENCES</span>
+                <strong>Reset ForgeAI settings</strong>
+                <p>Restore theme, mode, interface, display, and keyboard defaults.</p>
+                <button
+                  className="settings-reset-button"
+                  onClick={() => {
+                    localStorage.removeItem("forgeai-theme");
+                    localStorage.removeItem("forgeai-default-mode");
+                    localStorage.removeItem("forgeai-sidebar-autohide");
+                    localStorage.removeItem("forgeai-compact-messages");
+                    localStorage.removeItem("forgeai-keyboard-hints");
+                    localStorage.removeItem("forgeai-reduced-motion");
+                    setTheme("dark");
+                    setMode("Explain");
+                    setAutoHideSidebar(false);
+                    setCompactMessages(false);
+                    setShowKeyboardHints(true);
+                    setReducedMotion(false);
+                    setSidebarHidden(false);
+                  }}
+                >
+                  Reset settings
                 </button>
               </div>
             </div>
