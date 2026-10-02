@@ -418,6 +418,16 @@ function App() {
           >
             <span>＋</span>
             <strong>New chat</strong>
+            <kbd>⌘ K</kbd>
+          </button>
+
+          <div className="sidebar-section-label">RECENT</div>
+          <button className="recent-empty-card" onClick={handleNewChat}>
+            <span className="recent-empty-icon">◌</span>
+            <span>
+              <strong>Explore a new idea</strong>
+              <small>Start a fresh conversation</small>
+            </span>
           </button>
 
           <label className="chat-search">
@@ -463,22 +473,11 @@ function App() {
         </div>
 
         <div className="sidebar-account">
-          <div className="account-avatar">
-            {(user?.email?.[0] ?? "A").toUpperCase()}
+          <div className="plan-card">
+            <div className="plan-card-top"><span>Free plan</span><strong>7 / 10</strong></div>
+            <div className="plan-progress"><span /></div>
           </div>
-          <div className="account-details">
-            <span className="account-email">
-              {user?.email ?? "Signed in"}
-            </span>
-            <span className="account-label">Personal workspace</span>
-          </div>
-          <button
-            className="account-action"
-            title="Sign out"
-            onClick={() => void signOut()}
-          >
-            ↪
-          </button>
+          <button className="sidebar-settings-button" title="Settings" onClick={() => setShowSettings(true)}>⚙</button>
         </div>
       </aside>
 
@@ -637,40 +636,17 @@ function App() {
             <div className="grid-overlay" />
 
             <div className="welcome-content">
-              <div className="welcome-eyebrow">
-                <span className="eyebrow-line" />
-                SOFTWARE ENGINEERING AI
+              <div className="welcome-ai-mark">
+                <img src="/logo.svg" alt="ForgeAI" />
               </div>
-
               <h1 className="welcome-title">
-                <span>Engineering</span>{" "}
-                <span>answers,</span>{" "}
-                <span>not small talk.</span>
+                <span>What can we imagine</span>{" "}
+                <em>together?</em>
               </h1>
-
               <p className="welcome-description">
-                ForgeAI is tuned for software work: debugging,
-                architecture and system design, DevOps, databases,
-                APIs, testing, security and code review. Pick a
-                starting point or just describe what you’re building.
+                Ask anything, explore ideas, or bring your thoughts to life.
+                I’m here to think with you.
               </p>
-
-              <div className="starter-grid">
-                {starterCards.map((card) => (
-                  <button
-                    className="starter-card"
-                    key={card.title}
-                    onClick={() => handleStarter(card)}
-                  >
-                    <span className="starter-icon">{card.icon}</span>
-                    <span className="starter-copy">
-                      <strong>{card.title}</strong>
-                      <small>{modeLabel(card.mode)}</small>
-                    </span>
-                    <span className="starter-arrow">↗</span>
-                  </button>
-                ))}
-              </div>
             </div>
           </section>
         ) : (
@@ -790,31 +766,32 @@ function App() {
                 disabled={isStreaming}
               />
               <div className="composer-bottom">
-                <span className="composer-context">
-                  {mode} mode · Groq
-                </span>
+                <div className="composer-context">
+                  <span>⌕</span>
+                  <span>{mode}</span>
+                </div>
                 <div className="composer-actions">
+                  <button className="composer-icon-button" type="button" title="Attach">⌕</button>
+                  <button className="composer-voice-button" type="button" title="Voice input">◉</button>
                   <button
-                    className="composer-expand-button"
-                    type="button"
-                    title={composerExpanded ? "Shrink composer" : "Expand composer"}
-                    onClick={() => setComposerExpanded((value) => !value)}
+                    className="send-button"
+                    disabled={!message.trim() || isStreaming}
+                    onClick={() => void handleSend()}
                   >
-                    {composerExpanded ? "↙" : "↗"}
-                  </button>
-                  <button
-                  className="send-button"
-                  disabled={!message.trim() || isStreaming}
-                  onClick={() => void handleSend()}
-                >
-                    {isStreaming ? "Thinking…" : "Send"} <span>↑</span>
+                    <span>↑</span>
                   </button>
                 </div>
               </div>
             </div>
 
+            <div className="composer-tags">
+              <button className="composer-tag active" onClick={() => setMode("Explain")}>Adaptive</button>
+              <button className="composer-tag" onClick={() => setMode("Architect")}>Think</button>
+              <button className="composer-tag" disabled>Research</button>
+              <button className="composer-tag" onClick={() => setMode("Implement")}>Create</button>
+            </div>
             <p className="composer-disclaimer">
-              ForgeAI can make mistakes. Verify important technical decisions.
+              ForgeAI can make mistakes. Check important information. <span>?</span>
             </p>
           </section>
         )}
