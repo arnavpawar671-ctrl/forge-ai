@@ -20,6 +20,7 @@ export function useChat() {
   async function sendMessage(
     content: string,
     mode: string,
+    personality: string,
     conversationId: string | null,
     onConversationCreated?: (
       conversation: ConversationCreatedPayload,
@@ -56,6 +57,7 @@ export function useChat() {
     await streamChat({
       messages: nextMessages,
       mode,
+      personality,
       conversationId,
       onConversationCreated,
       onConversationTitle,
