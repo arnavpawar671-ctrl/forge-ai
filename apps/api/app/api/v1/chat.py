@@ -18,7 +18,8 @@ from app.application.chat.send_message import (
     send_message_service,
 )
 from app.core.security import get_current_user
-from app.infrastructure.ai.base import AIMessage
+from app.infrastructure.ai.base import AIMessage, AIRequest
+from app.infrastructure.ai.router import ai_router
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -42,6 +43,54 @@ def _conversation_title(message: str) -> str:
         return "New conversation"
     words = cleaned.split(" ")
     return cleaned if len(words) <= 7 else f"{' '.join(words[:7])}…"
+
+
+def _clean_ai_title(title: str) -> str:
+    cleaned = " ".join(title.strip().split())
+    cleaned = cleaned.strip().strip('"').strip("'")
+    if not cleaned:
+        return "New conversation"
+    words = cleaned.split(" ")
+    return cleaned if len(words) <= 8 else " ".join(words[:8])
+
+
+async def _generate_ai_title(
+    messages: list[ChatMessage],
+    model: str | None,
+) -> str:
+    recent_messages = messages[-8:]
+    conversation_text = "\n".join(
+        f"{message.role.upper()}: {message.content.strip()}"
+        for message in recent_messages
+        if message.content.strip()
+    )
+
+    if not conversation_text:
+        return "New conversation"
+
+    request = AIRequest(
+        messages=[
+            AIMessage(
+                role="system",
+                content=(
+                    "Create a concise chat-history title for the conversation. "
+                    "Return ONLY the title, with no quotes, punctuation, emoji, "
+                    "prefix, explanation, or markdown. Use 2-8 words. "
+                    "Capture the main topic or task, not the user's wording verbatim."
+                ),
+            ),
+            AIMessage(role="user", content=conversation_text),
+        ],
+        model=model or "",
+        temperature=0.2,
+        max_tokens=32,
+        mode="explain",
+        personality="senior_engineer",
+        stream=False,
+    )
+
+    response = await ai_router.generate(request)
+    return _clean_ai_title(response.content)
 
 
 async def generate_stream(
@@ -132,10 +181,27 @@ async def generate_stream(
                 personality=request.personality,
             )
 
+        try:
+            ai_title = await _generate_ai_title(request.messages, request.model)
+        except Exception:
+            ai_title = _conversation_title(last_user_message)
+
         touch_conversation(
             conversation_id=conversation_id,
             user_id=user_id,
-            title=_conversation_title(last_user_message),
+            title=ai_title,
+        )
+
+        yield (
+            "data: "
+            + json.dumps(
+                {
+                    "type": "conversation_title",
+                    "conversation_id": conversation_id,
+                    "title": ai_title,
+                }
+            )
+            + "\n\n"
         )
 
         yield (
