@@ -39,6 +39,7 @@ export async function streamChat({
   conversationId,
   onToken,
   onConversationCreated,
+  onConversationTitle,
   onDone,
   onError,
 }: StreamOptions): Promise<void> {
