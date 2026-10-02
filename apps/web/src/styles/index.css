@@ -393,3 +393,124 @@ button:disabled { cursor: not-allowed; }
   background: #211932;
   color: #c4b5fd;
 }
+
+
+/* Motion layer: subtle product-quality animation, not constant spectacle. */
+@keyframes forgeai-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes forgeai-soft-pulse {
+  0%,100% { opacity: .72; }
+  50% { opacity: 1; }
+}
+@keyframes forgeai-glow-breathe {
+  0%,100% { box-shadow: 0 7px 20px rgba(128,100,216,.16); }
+  50% { box-shadow: 0 10px 30px rgba(128,100,216,.28); }
+}
+@keyframes forgeai-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes forgeai-message-in {
+  from { opacity: 0; transform: translateY(5px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes forgeai-cursor-pulse {
+  0%,100% { opacity: .35; }
+  50% { opacity: 1; }
+}
+
+.welcome-content { animation: forgeai-fade-up 520ms cubic-bezier(.2,.75,.25,1) both; }
+.welcome-eyebrow { animation: forgeai-fade-up 420ms 40ms cubic-bezier(.2,.75,.25,1) both; }
+.welcome-title { animation: forgeai-fade-up 560ms 90ms cubic-bezier(.2,.75,.25,1) both; }
+.welcome-description { animation: forgeai-fade-up 560ms 150ms cubic-bezier(.2,.75,.25,1) both; }
+.starter-card {
+  animation: forgeai-fade-up 480ms cubic-bezier(.2,.75,.25,1) both;
+}
+.starter-card:nth-child(1) { animation-delay: 190ms; }
+.starter-card:nth-child(2) { animation-delay: 230ms; }
+.starter-card:nth-child(3) { animation-delay: 270ms; }
+.starter-card:nth-child(4) { animation-delay: 310ms; }
+.starter-card:nth-child(5) { animation-delay: 350ms; }
+.starter-card:nth-child(6) { animation-delay: 390ms; }
+
+.starter-card:hover .starter-icon {
+  transform: translateY(-2px) rotate(-2deg);
+  transition: transform 180ms ease;
+}
+.starter-arrow { transition: transform 180ms ease; }
+.starter-card:hover .starter-arrow { transform: translateX(3px); }
+
+.new-chat-button { animation: forgeai-glow-breathe 3.8s ease-in-out infinite; }
+.new-chat-button:hover { animation-play-state: paused; }
+
+.demo-pill span { animation: forgeai-soft-pulse 2.2s ease-in-out infinite; }
+
+.message-row {
+  animation: forgeai-message-in 260ms ease-out both;
+}
+
+.composer:focus-within {
+  transform: translateY(-1px);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.send-button span {
+  display: inline-block;
+  transition: transform 180ms ease;
+}
+.send-button:hover:not(:disabled) span { transform: translateX(2px); }
+
+.mode-pill.selected {
+  transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.mode-pill.selected:hover { transform: translateY(-1px); }
+
+.code-block {
+  animation: forgeai-fade-up 300ms ease-out both;
+}
+
+.thinking {
+  animation: forgeai-soft-pulse 1.5s ease-in-out infinite;
+}
+
+.settings-panel {
+  animation: forgeai-fade-up 360ms cubic-bezier(.2,.75,.25,1) both;
+}
+.settings-card {
+  animation: forgeai-fade-up 350ms ease-out both;
+}
+.settings-card:nth-child(1) { animation-delay: 40ms; }
+.settings-card:nth-child(2) { animation-delay: 70ms; }
+.settings-card:nth-child(3) { animation-delay: 100ms; }
+.settings-card:nth-child(4) { animation-delay: 130ms; }
+.settings-card:nth-child(5) { animation-delay: 160ms; }
+.settings-card:nth-child(6) { animation-delay: 190ms; }
+.settings-card:nth-child(7) { animation-delay: 220ms; }
+.settings-card:nth-child(8) { animation-delay: 250ms; }
+
+.theme-dark .new-chat-button {
+  animation-name: forgeai-dark-glow-breathe;
+}
+@keyframes forgeai-dark-glow-breathe {
+  0%,100% { box-shadow: 0 7px 22px rgba(139,92,246,.18); }
+  50% { box-shadow: 0 10px 32px rgba(139,92,246,.34); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-forgeai-reduced-motion="true"] .new-chat-button,
+[data-forgeai-reduced-motion="true"] .demo-pill span,
+[data-forgeai-reduced-motion="true"] .thinking {
+  animation: none !important;
+}
