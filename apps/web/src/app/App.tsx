@@ -3,6 +3,7 @@ import { ParticleField } from "../components/ParticleField";
 import { useAuth } from "./providers/AuthProvider";
 import { useChat } from "../features/chat/hooks/useChat";
 import {
+  deleteConversation,
   getConversationMessages,
   listConversations,
   type Conversation,
@@ -414,6 +415,35 @@ function App() {
     });
   };
 
+  const handleDeleteConversation = async (conversation: Conversation) => {
+    if (isStreaming) return;
+
+    const confirmed = window.confirm(
+      'Delete "' + conversation.title + '"? This will permanently remove the chat and its messages.',
+    );
+    if (!confirmed) return;
+
+    try {
+      setHistoryError(null);
+      await deleteConversation(conversation.id);
+      setConversations((current) =>
+        current.filter((item) => item.id !== conversation.id),
+      );
+
+      if (activeConversationId === conversation.id) {
+        clearMessages();
+        setActiveConversationId(null);
+        setMessage("");
+      }
+    } catch (error) {
+      setHistoryError(
+        error instanceof Error
+          ? error.message
+          : "Could not delete this conversation.",
+      );
+    }
+  };
+
   const handleNewChat = () => {
     if (isStreaming) return;
     clearMessages();
@@ -499,21 +529,40 @@ function App() {
               </div>
             ) : (
               filteredConversations.map((conversation) => (
-                <button
+                <div
                   key={conversation.id}
                   className={
                     activeConversationId === conversation.id
                       ? "history-item active"
                       : "history-item"
                   }
-                  onClick={() =>
-                    void handleSelectConversation(conversation)
-                  }
-                  disabled={isStreaming}
+                  role="button"
+                  tabIndex={isStreaming ? -1 : 0}
+                  onClick={() => void handleSelectConversation(conversation)}
+                  onKeyDown={(event) => {
+                    if ((event.key === "Enter" || event.key === " ") && !isStreaming) {
+                      event.preventDefault();
+                      void handleSelectConversation(conversation);
+                    }
+                  }}
+                  aria-label={"Open conversation " + conversation.title}
                 >
                   <span className="history-dot">•</span>
-                  <span>{conversation.title}</span>
-                </button>
+                  <span className="history-title">{conversation.title}</span>
+                  <button
+                    className="history-delete-button"
+                    type="button"
+                    title="Delete chat"
+                    aria-label={"Delete " + conversation.title}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void handleDeleteConversation(conversation);
+                    }}
+                    disabled={isStreaming}
+                  >
+                    ×
+                  </button>
+                </div>
               ))
             )}
           </div>
