@@ -20,6 +20,7 @@ export interface ConversationCreatedPayload {
 export interface StreamOptions {
   messages: ChatMessage[];
   mode: string;
+  personality: string;
   conversationId?: string | null;
   onToken: (token: string) => void;
   onConversationCreated?: (
@@ -36,6 +37,7 @@ const API_URL =
 export async function streamChat({
   messages,
   mode,
+  personality,
   conversationId,
   onToken,
   onConversationCreated,
@@ -65,6 +67,7 @@ export async function streamChat({
         body: JSON.stringify({
           messages,
           mode,
+          personality,
           conversation_id: conversationId ?? null,
         }),
       },
