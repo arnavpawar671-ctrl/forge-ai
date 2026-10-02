@@ -181,6 +181,32 @@ async def create_conversation_endpoint(
     }
 
 
+@router.delete("/{conversation_id}")
+async def delete_conversation(
+    conversation_id: str,
+    current_user=Depends(get_current_user),
+):
+    user_id = _user_id(current_user)
+
+    _get_owned_conversation(conversation_id, user_id)
+
+    response = (
+        database.table("conversations")
+        .delete()
+        .eq("id", conversation_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found.",
+        )
+
+    return {"deleted": True, "conversation_id": conversation_id}
+
+
 @router.get("/{conversation_id}/messages")
 async def list_messages(
     conversation_id: str,
