@@ -38,6 +38,7 @@ async function createWindow() {
     minHeight: 680,
     backgroundColor: "#08070d",
     title: "ForgeAI",
+    icon: path.join(__dirname, "../assets/forgeai.ico"),
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
