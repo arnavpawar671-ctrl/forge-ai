@@ -969,3 +969,25 @@ button:disabled { cursor: not-allowed; }
   .composer { width: calc(100% - 10px); }
   .composer-tags { width: calc(100% - 10px); }
 }
+
+
+/* Settings: remove the native-looking white scrollbar strip in dark mode. */
+.theme-dark .settings-panel {
+  background: #0b0910;
+  scrollbar-color: #3a3247 #0b0910;
+  scrollbar-width: thin;
+}
+.theme-dark .settings-panel::-webkit-scrollbar {
+  width: 7px;
+}
+.theme-dark .settings-panel::-webkit-scrollbar-track {
+  background: #0b0910;
+}
+.theme-dark .settings-panel::-webkit-scrollbar-thumb {
+  background: #3a3247;
+  border-radius: 999px;
+  border: 2px solid #0b0910;
+}
+.theme-dark .settings-panel::-webkit-scrollbar-thumb:hover {
+  background: #55486a;
+}
