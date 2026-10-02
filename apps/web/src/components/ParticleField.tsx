@@ -58,12 +58,19 @@ const vertexShader = `
     vec4 modelPosition = modelMatrix * vec4(pos, 1.0);
     float t = uTime;
 
-    modelPosition.x += sin(t * aRandom.z + 6.28 * aRandom.w)
-      * mix(0.12, 1.9, aRandom.x);
-    modelPosition.y += sin(t * aRandom.y + 6.28 * aRandom.x)
-      * mix(0.12, 1.9, aRandom.w);
-    modelPosition.z += sin(t * aRandom.w + 6.28 * aRandom.y)
-      * mix(0.12, 1.4, aRandom.z);
+    // Each particle gets its own slow orbit and vertical drift so the
+    // background feels alive instead of moving as one rigid cloud.
+    float phase = 6.28318 * aRandom.x;
+    float drift = sin(t * (0.22 + aRandom.z * 0.38) + phase) * (0.55 + aRandom.w * 1.25);
+    float sway = sin(t * (0.18 + aRandom.y * 0.28) + phase * 1.7) * (0.25 + aRandom.x * 0.9);
+
+    modelPosition.x += sway;
+    modelPosition.y += drift;
+    modelPosition.z += sin(t * (0.16 + aRandom.w * 0.24) + phase) * 0.7;
+
+    // A second, slower motion layer creates the floating/dreamy depth.
+    modelPosition.x += sin(t * 0.07 + phase * 2.0) * aRandom.y * 0.55;
+    modelPosition.y += cos(t * 0.055 + phase * 1.4) * aRandom.z * 0.7;
 
     vec4 viewPosition = viewMatrix * modelPosition;
 
@@ -95,8 +102,10 @@ const fragmentShader = `
     float core = smoothstep(0.48, 0.04, distanceFromCenter);
     float glow = smoothstep(0.5, 0.0, distanceFromCenter);
 
-    vec3 shimmer = vColor + 0.08 * sin(gl_PointCoord.yxx + uTime + vRandom.y * 6.28);
-    float alpha = mix(0.72, 1.0, core) * (uAlphaParticles > 0.5 ? 0.9 : 1.0);
+    // Slow individual twinkle keeps the field organic without flashing.
+    float twinkle = 0.78 + 0.22 * sin(uTime * (0.7 + vRandom.z * 1.1) + vRandom.x * 6.28318);
+    vec3 shimmer = vColor + 0.08 * sin(gl_PointCoord.yxx + uTime * 0.7 + vRandom.y * 6.28);
+    float alpha = mix(0.72, 1.0, core) * twinkle * (uAlphaParticles > 0.5 ? 0.9 : 1.0);
 
     gl_FragColor = vec4(shimmer, alpha * glow);
   }
@@ -104,15 +113,15 @@ const fragmentShader = `
 
 export function ParticleField({
   className = "",
-  particleCount = 900,
+  particleCount = 1200,
   particleColors = DEFAULT_COLORS,
-  particleSpread = 12,
-  speed = 0.16,
+  particleSpread = 14,
+  speed = 0.22,
   moveParticlesOnHover = true,
   particleHoverFactor = 1.1,
   disableRotation = false,
-  particleBaseSize = 5.5,
-  sizeRandomness = 0.8,
+  particleBaseSize = 5.8,
+  sizeRandomness = 0.85,
   alphaParticles = true,
   cameraDistance = 20,
   pixelRatio = 1.5,
