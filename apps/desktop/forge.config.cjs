@@ -3,6 +3,7 @@ module.exports = {
     name: "ForgeAI",
     executableName: "ForgeAI",
     appBundleId: "ai.forgeai.desktop",
+    icon: "assets/forgeai",
     asar: true,
     extraResource: ["../web/dist"],
   },
