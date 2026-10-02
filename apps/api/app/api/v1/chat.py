@@ -111,6 +111,7 @@ async def generate_stream(
         return
 
     conversation_id = request.conversation_id
+    is_new_conversation = conversation_id is None
 
     try:
         if conversation_id:
@@ -118,7 +119,7 @@ async def generate_stream(
         else:
             conversation = create_conversation(
                 user_id=user_id,
-                title=_conversation_title(last_user_message),
+                title="New conversation",
                 mode=request.mode,
                 personality=request.personality,
                 model=request.model,
@@ -181,28 +182,34 @@ async def generate_stream(
                 personality=request.personality,
             )
 
-        try:
-            ai_title = await _generate_ai_title(request.messages, request.model)
-        except Exception:
-            ai_title = _conversation_title(last_user_message)
+        # Generate the AI title only for the first turn of a conversation.
+        # Later messages keep the existing chat-history title stable.
+        if is_new_conversation:
+            try:
+                ai_title = await _generate_ai_title(
+                    request.messages,
+                    request.model,
+                )
+            except Exception:
+                ai_title = _conversation_title(last_user_message)
 
-        touch_conversation(
-            conversation_id=conversation_id,
-            user_id=user_id,
-            title=ai_title,
-        )
-
-        yield (
-            "data: "
-            + json.dumps(
-                {
-                    "type": "conversation_title",
-                    "conversation_id": conversation_id,
-                    "title": ai_title,
-                }
+            touch_conversation(
+                conversation_id=conversation_id,
+                user_id=user_id,
+                title=ai_title,
             )
-            + "\n\n"
-        )
+
+            yield (
+                "data: "
+                + json.dumps(
+                    {
+                        "type": "conversation_title",
+                        "conversation_id": conversation_id,
+                        "title": ai_title,
+                    }
+                )
+                + "\n\n"
+            )
 
         yield (
             "data: "
