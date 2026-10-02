@@ -300,6 +300,25 @@ function App() {
           return [conversation, ...current];
         });
       },
+      (conversationId, aiTitle) => {
+        setConversations((current) =>
+          current
+            .map((item) =>
+              item.id === conversationId
+                ? {
+                    ...item,
+                    title: aiTitle,
+                    updated_at: new Date().toISOString(),
+                  }
+                : item,
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.updated_at).getTime() -
+                new Date(a.updated_at).getTime(),
+            ),
+        );
+      },
       (conversationId) => {
         if (!conversationId) return;
         setActiveConversationId(conversationId);
