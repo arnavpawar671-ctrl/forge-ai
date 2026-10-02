@@ -157,6 +157,7 @@ function App() {
   const [composerExpanded, setComposerExpanded] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     const saved = localStorage.getItem("forgeai-theme");
     return saved === "light" || saved === "dim" ? "light" : "dark";
@@ -172,6 +173,11 @@ function App() {
   );
   const sidebarTimerRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!isStreaming) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, isStreaming]);
 
   useEffect(() => {
     localStorage.setItem("forgeai-sidebar-autohide", String(autoHideSidebar));
@@ -764,6 +770,7 @@ function App() {
               );
             })}
             {historyError && <div className="history-error">{historyError}</div>}
+            <div ref={messagesEndRef} aria-hidden="true" />
           </section>
         )}
 
