@@ -1,6 +1,10 @@
 const { app, BrowserWindow, shell } = require("electron");
 const path = require("node:path");
 
+if (process.platform === "win32") {
+  app.setAppUserModelId("ai.forgeai.desktop");
+}
+
 const isDev = !app.isPackaged;
 const rendererUrl = process.env.FORGEAI_DEV_URL || "http://127.0.0.1:5173/";
 
