@@ -25,6 +25,7 @@ export interface StreamOptions {
   onConversationCreated?: (
     conversation: ConversationCreatedPayload,
   ) => void;
+  onConversationTitle?: (conversationId: string, title: string) => void;
   onDone: (conversationId?: string) => void;
   onError: (message: string) => void;
 }
@@ -118,6 +119,13 @@ export async function streamChat({
 
         if (payload.type === "conversation") {
           onConversationCreated?.(payload.conversation);
+        }
+
+        if (payload.type === "conversation_title") {
+          onConversationTitle?.(
+            payload.conversation_id,
+            payload.title,
+          );
         }
 
         if (payload.type === "token") {
