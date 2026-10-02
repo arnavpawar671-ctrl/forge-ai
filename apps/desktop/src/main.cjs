@@ -32,7 +32,7 @@ function createWindow() {
     window.loadURL(rendererUrl);
     window.webContents.openDevTools({ mode: "detach" });
   } else {
-    window.loadFile(path.join(__dirname, "../../web/dist/index.html"));
+    window.loadFile(path.join(process.resourcesPath, "web", "dist", "index.html"));
   }
 }
 
