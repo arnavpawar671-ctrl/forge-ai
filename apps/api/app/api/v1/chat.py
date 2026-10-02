@@ -32,7 +32,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1)
     mode: str = "explain"
-    personality: str = "senior_engineer"
+    personality: str = "friendly_engineer"
     model: str | None = None
     conversation_id: str | None = None
 
