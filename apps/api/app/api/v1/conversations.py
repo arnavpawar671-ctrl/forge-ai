@@ -195,6 +195,7 @@ async def delete_conversation(
         .delete()
         .eq("id", conversation_id)
         .eq("user_id", user_id)
+        .select("id")
         .execute()
     )
 
