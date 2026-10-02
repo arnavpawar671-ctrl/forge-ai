@@ -14,7 +14,7 @@ function sleep(ms) {
 async function waitForDevServer(url) {
   for (let attempt = 1; attempt <= DEV_SERVER_RETRIES; attempt += 1) {
     try {
-      const response = await fetch(url, { method: "HEAD" });
+      const response = await fetch(url);
       if (response.ok || response.status < 500) {
         return;
       }
