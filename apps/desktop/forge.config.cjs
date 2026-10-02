@@ -5,12 +5,7 @@ module.exports = {
     appBundleId: "ai.forgeai.desktop",
     icon: "assets/forgeai",
     asar: true,
-    extraResource: [
-      {
-        from: "../web/dist",
-        to: "web/dist",
-      },
-    ],
+    extraResource: ["../web/dist"],
   },
   makers: [
     {
