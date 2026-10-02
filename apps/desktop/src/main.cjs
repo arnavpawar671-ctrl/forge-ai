@@ -78,7 +78,7 @@ async function createWindow() {
     window.webContents.openDevTools({ mode: "detach" });
   } else {
     await window.loadFile(
-      path.join(process.resourcesPath, "web", "dist", "index.html"),
+      path.join(process.resourcesPath, "dist", "index.html"),
     );
   }
 }
