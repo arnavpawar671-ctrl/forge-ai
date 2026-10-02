@@ -24,6 +24,7 @@ export function useChat() {
     onConversationCreated?: (
       conversation: ConversationCreatedPayload,
     ) => void,
+    onConversationTitle?: (conversationId: string, title: string) => void,
     onDone?: (conversationId?: string) => void,
   ) {
     const trimmed = content.trim();
@@ -57,6 +58,7 @@ export function useChat() {
       mode,
       conversationId,
       onConversationCreated,
+      onConversationTitle,
 
       onToken: (token) => {
         setMessages((current) => {
