@@ -8,11 +8,13 @@ export function AuthScreen() {
   const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setMessage("");
+    setVerificationSent(false);
     setBusy(true);
 
     try {
@@ -45,10 +47,9 @@ export function AuthScreen() {
         console.log("ForgeAI signup response:", data);
 
         setMessage(
-          "Account created successfully. Check your email if confirmation is enabled.",
+          "Account created. Check your email and click the verification link before signing in.",
         );
-
-        setMode("signin");
+        setVerificationSent(true);
         setPassword("");
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -58,6 +59,13 @@ export function AuthScreen() {
 
         if (error) {
           console.error("ForgeAI signin error:", error);
+
+          if (error.message === "Email not confirmed") {
+            throw new Error(
+              "Your email is not verified yet. Open the ForgeAI verification email, click the link, then sign in again.",
+            );
+          }
+
           throw error;
         }
 
@@ -82,6 +90,44 @@ export function AuthScreen() {
           "Authentication failed. Check the browser console for details.",
         );
       }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      setMessage("Enter your email address first.");
+      return;
+    }
+
+    setBusy(true);
+    setMessage("");
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: normalizedEmail,
+      });
+
+      if (error) {
+        console.error("ForgeAI verification resend error:", error);
+        throw error;
+      }
+
+      setMessage(
+        "Verification email sent again. Check your inbox and spam folder.",
+      );
+      setVerificationSent(true);
+    } catch (error) {
+      console.error("ForgeAI verification resend failed:", error);
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not resend the verification email.",
+      );
     } finally {
       setBusy(false);
     }
@@ -125,6 +171,7 @@ export function AuthScreen() {
 
     setMessage("");
     setPassword("");
+    setVerificationSent(false);
   }
 
   return (
@@ -217,6 +264,17 @@ export function AuthScreen() {
           >
             {message}
           </p>
+        )}
+
+        {verificationSent && (
+          <button
+            className="auth-resend"
+            type="button"
+            onClick={() => void handleResendVerification()}
+            disabled={busy}
+          >
+            Resend verification email
+          </button>
         )}
 
         <button
