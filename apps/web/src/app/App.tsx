@@ -137,9 +137,10 @@ function App() {
   const [composerExpanded, setComposerExpanded] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [theme, setTheme] = useState<"dark" | "dim">(
-    () => (localStorage.getItem("forgeai-theme") as "dark" | "dim") || "dark",
-  );
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const saved = localStorage.getItem("forgeai-theme");
+    return saved === "light" || saved === "dim" ? "light" : "dark";
+  });
   const [compactMessages, setCompactMessages] = useState(
     () => localStorage.getItem("forgeai-compact-messages") === "true",
   );
@@ -379,7 +380,7 @@ function App() {
   };
 
   return (
-    <div className={theme === "dim" ? "app-shell theme-dim" : "app-shell"}>
+    <div className={theme === "dark" ? "app-shell theme-dark" : "app-shell theme-light"}>
       <aside
         className={sidebarHidden ? "sidebar sidebar-hidden" : "sidebar"}
         onMouseEnter={revealSidebar}
@@ -543,11 +544,11 @@ function App() {
               </div>
               <div className="settings-card settings-control-card">
                 <span className="settings-card-label">APPEARANCE</span>
-                <strong>{theme === "dark" ? "Dark" : "Dim"}</strong>
+                <strong>{theme === "dark" ? "Dark" : "Light"}</strong>
                 <p>Adjust the workspace contrast.</p>
                 <div className="settings-segment">
                   <button className={theme === "dark" ? "active" : ""} onClick={() => setTheme("dark")}>Dark</button>
-                  <button className={theme === "dim" ? "active" : ""} onClick={() => setTheme("dim")}>Dim</button>
+                  <button className={theme === "light" ? "active" : ""} onClick={() => setTheme("light")}>Light</button>
                 </div>
               </div>
               <div className="settings-card settings-control-card">
