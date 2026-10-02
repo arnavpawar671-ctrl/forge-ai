@@ -4,6 +4,7 @@ module.exports = {
     executableName: "ForgeAI",
     appBundleId: "ai.forgeai.desktop",
     asar: true,
+    extraResource: ["../web/dist"],
   },
   makers: [
     {
