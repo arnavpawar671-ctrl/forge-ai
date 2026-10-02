@@ -620,3 +620,53 @@ button:disabled { cursor: not-allowed; }
   opacity: .28 !important;
   filter: none !important;
 }
+
+
+.particle-fallback-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.particle-fallback {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  background: #c4b5fd;
+  opacity: .72;
+  box-shadow: 0 0 7px rgba(167,139,250,.62);
+  animation: forgeai-particle-float 8s ease-in-out infinite;
+}
+@keyframes forgeai-particle-float {
+  0%,100% {
+    transform: translate3d(0, 10px, 0) scale(.78);
+    opacity: .3;
+  }
+  25% {
+    transform: translate3d(var(--particle-drift), -8px, 0) scale(1);
+    opacity: .82;
+  }
+  50% {
+    transform: translate3d(calc(var(--particle-drift) * -0.6), -20px, 0) scale(.9);
+    opacity: 1;
+  }
+  75% {
+    transform: translate3d(calc(var(--particle-drift) * .45), -6px, 0) scale(.82);
+    opacity: .62;
+  }
+}
+.theme-dark .particle-fallback {
+  background: #ddd6fe;
+  box-shadow: 0 0 9px rgba(167,139,250,.82);
+  opacity: .9;
+}
+@media (prefers-reduced-motion: reduce) {
+  .particle-fallback {
+    animation: none !important;
+    opacity: .32;
+  }
+}
+[data-forgeai-reduced-motion="true"] .particle-fallback {
+  animation: none !important;
+  opacity: .22;
+}
