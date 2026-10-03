@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import logoUrl from "../assets/logo.svg";
 import { ParticleField } from "../components/ParticleField";
 import { useAuth } from "./providers/AuthProvider";
 import { useChat } from "../features/chat/hooks/useChat";
@@ -480,7 +481,7 @@ function App() {
         <div className="sidebar-top">
           <div className="brand-lockup">
             <div className="brand-mark">
-              <img src="/logo.svg" alt="" />
+              <img src={logoUrl} alt="" />
             </div>
             <div className="brand-copy">
               <div className="brand-name">ForgeAI</div>
@@ -749,7 +750,7 @@ function App() {
 
             <div className="welcome-content">
               <div className="welcome-ai-mark">
-                <img src="/logo.svg" alt="ForgeAI" />
+                <img src={logoUrl} alt="ForgeAI" />
               </div>
               <h1 className="welcome-title">
                 <span>What can we imagine</span>{" "}
