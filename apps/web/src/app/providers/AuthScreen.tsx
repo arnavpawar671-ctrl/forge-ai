@@ -1,6 +1,6 @@
 import React, { useState, type FormEvent } from "react";
 import { supabase } from "../../lib/supabase";
-import logoUrl from "../../assets/logo.svg";
+const logoUrl = new URL("../../assets/logo.svg", import.meta.url).href;
 
 export function AuthScreen() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
