@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import logoUrl from "../assets/logo.svg";
+const logoUrl = new URL("../assets/logo.svg", import.meta.url).href;
 import { ParticleField } from "../components/ParticleField";
 import { useAuth } from "./providers/AuthProvider";
 import { useChat } from "../features/chat/hooks/useChat";
